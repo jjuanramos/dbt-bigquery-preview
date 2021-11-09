@@ -62,6 +62,7 @@
 	"dependencies": {
 		"@google-cloud/bigquery": "^5.9.1",
 		"google-auth-library": "^7.10.2",
-		"google-cloud-bigquery": "^1.0.0"
+		"google-cloud-bigquery": "^1.0.0",
+		"yaml": "^1.10.2"
 	}
 }
