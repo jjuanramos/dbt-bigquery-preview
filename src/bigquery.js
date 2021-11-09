@@ -1,14 +1,14 @@
-import * as vscode from "vscode";
-import { BigQuery } from "@google-cloud/bigquery";
-import {GoogleAuth} from "./google_auth";
+const vscode = require('vscode');
+const bigquery = require('@google-cloud/bigquery');
+const google_auth = require('./google_auth');
 
 export class BigQueryRunner {
   constructor(config, editor) {
       this.config = config;
       this.editor = editor;
-      this.googleAuth = new GoogleAuth();
+      this.googleAuth = new google_auth.GoogleAuth();
 
-      this.client = new BigQuery({
+      this.client = new bigquery.BigQuery({
         userAgent: 'dbt-bigquery-preview',
         projectId: !!this.config.get("projectId")? this.config.get("projectId") : undefined,
         location: !!this.config.get("location") ? this.config.get("location") : undefined

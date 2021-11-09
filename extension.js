@@ -1,15 +1,49 @@
 const vscode = require('vscode');
+const bigquery = require('./src/bigquery');
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+let config;
+const configPrefix = 'dbt-bigquery-preview';
+
+function readConfig() {
+	try {
+		config = vscode.workspace.getConfiguration(configPrefix);
+	} catch (e) {
+		vscode.window.showErrorMessage(`failed to read config: ${e}`);
+	}
+}
+
 function activate(context) {
+	readConfig();
+	const editor = vscode.window.activeTextEditor;
+	if (!editor) {
+		return;
+	}
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
+	const bigQueryRunner = new bigquery.BigQueryRunner(config, editor);
+
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration(event => {
+			if (!event.affectsConfiguration(configPrefix)) {
+				return;
+			}
+
+			readConfig();
+			bigQueryRunner.setConfig(config);
+		})
+	);
+
 	console.log('Congratulations, your extension "dbt-bigquery-preview" is now active!');
 
-	let disposable = vscode.commands.registerCommand('dbt-bigquery-preview.helloWorld', function () {
-		vscode.window.showInformationMessage('Hello World from dbt-bigquery-preview!');
+	let disposable = vscode.commands.registerCommand('dbt-bigquery-preview.runQuery', async () => {
+		try {
+			const queryResult = await bigQueryRunner.runBigQueryJob(
+				'select * from `northwind-raw.sales_ddbb.Employees`'
+			);
+			const data = queryResult[0][0].name;
+			vscode.window.showInformationMessage(`${data}`);
+		} catch(e) {
+			vscode.window.showErrorMessage(e);
+		}
 	});
 
 	context.subscriptions.push(disposable);
@@ -22,13 +56,6 @@ module.exports = {
 	activate,
 	deactivate
 }
-
-
-// to do
-// 1. add config options for the extension
-// 2. authenticate
-// 3. be able to fetch the project for the given job
-// 4. be able to get results back from hardcoded query
 
 // utils
 // https://github.dev/dbt-labs/dbt-bigquery/dbt/adapters/bigquery/connections.py
