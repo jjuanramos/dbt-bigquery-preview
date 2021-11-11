@@ -2,6 +2,9 @@ const vscode = require('vscode');
 const bigquery = require('./src/bigquery');
 const fs = require('fs');
 const yaml = require('yaml');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
 
 let config;
 const configPrefix = 'dbt-bigquery-preview';
@@ -43,10 +46,14 @@ function activate(context) {
 	const disposable = vscode.commands.registerCommand('dbt-bigquery-preview.runQuery', async () => {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
-			const compiledQuery = getCompiledQuery(filePath);
-			const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
-			const data = queryResult[0][0].name;
-			vscode.window.showInformationMessage(`${data}`);
+			const fileName = filePath[filePath.length -1].replace('.sql', '');
+			const cmd = `dbt compile -s ${fileName}`;
+			const { stdout, stderr } = await executeCommand(cmd);
+			vscode.window.showInformationMessage(`${stderr}`);
+			// const compiledQuery = getCompiledQuery(filePath);
+			// const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
+			// const data = queryResult[0][0].name;
+			// vscode.window.showInformationMessage(`${data}`);
 		} catch(e) {
 			vscode.window.showErrorMessage(e);
 		}
@@ -60,6 +67,13 @@ function getCompiledQuery(filePath) {
     const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
     const compiledQuery = fs.readFileSync(compiledFilePath, 'utf-8');
 	return compiledQuery;
+}
+
+async function executeCommand(cmd) {
+	vscode.window.showInformationMessage("command running...");
+    const { stdout, stderr } = await exec(cmd);
+	vscode.window.showInformationMessage("command ran!");
+	return { stdout, stderr };
 }
 
 function deactivate() {}
@@ -76,7 +90,7 @@ module.exports = {
 	// 1.1 get full path
 	// detect where /models start
 	// add /target/compiled/$dbt_project.name before the /models
-// 2. manage to do dbt compile of the model
+// 2. manage to do dbt compile of the model, show it in the cmd
 // 3. glue 1 & 2 together
 
 // utils
@@ -84,3 +98,6 @@ module.exports = {
 // https://github.dev/tadyjp/vscode-query-runner/blob/master/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-db-bigquery/src/bigquery_connection.ts
 // https://github.dev/innoverio/vscode-dbt-power-user
+// https://github.dev/innoverio/vscode-dbt-power-user/src/commandProcessExecution.ts
+// https://github.dev/innoverio/vscode-dbt-power-user/src/dbt_client/dbtCommandQueue.ts
+// https://github.dev/innoverio/vscode-dbt-power-user/src/dbt_client/dbtCommandFactory.ts
