@@ -1,6 +1,5 @@
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const { stderr } = require('process');
 
 // function executeCommand(cmd) {
 
@@ -23,13 +22,6 @@ const { stderr } = require('process');
 // })
 // );
 
-async function executeCommand(cmd) {
-    const { stdout, stderr } = await exec(cmd);
-    console.log('stdout:', stdout);
-    console.error('stderr:', stderr);
-}
-
-(async () => {
-    const result = await executeCommand("dbt --version");
-    console.log(result);
-})()
+const filePath = '/home/juan/coding/learn/dbt/dbt-northwind-analytics/models/staging/stg_customers.sql';
+const filePathSplitted = filePath.split('/models/');
+const x = filePathSplitted[filePathSplitted.length -1].replace('.sql', '');

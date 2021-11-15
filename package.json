@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:dbt-bigquery-preview.runQuery"
+		"onCommand:dbt-bigquery-preview.runQuery",
+		"workspaceContains:**/dbt_project.yml"
 	],
 	"main": "./out/main.js",
 	"contributes": {

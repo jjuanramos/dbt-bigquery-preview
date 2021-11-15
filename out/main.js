@@ -46622,23 +46622,64 @@ function activate(context) {
   const disposable = vscode3.commands.registerCommand("dbt-bigquery-preview.runQuery", () => __async(this, null, function* () {
     try {
       const filePath = vscode3.window.activeTextEditor.document.fileName;
-      const fileName = filePath[filePath.length - 1].replace(".sql", "");
-      const cmd = `dbt compile -s ${fileName}`;
-      const { stdout, stderr } = yield executeCommand(cmd);
-      vscode3.window.showInformationMessage(`${stderr}`);
+      const fileName = getFileName(filePath);
+      const terminal = selectTerminal();
+      terminal.sendText(`dbt compile -s ${fileName}`);
+      console.log(`${terminal.exitStatus.code}`);
+      yield terminalResponse(terminal);
+      vscode3.window.showInformationMessage("We awaited!");
+      yield new Promise((resolve) => setTimeout(resolve, 25e3));
+      console.log(`${terminal.exitStatus.code}`);
+      terminal.dispose();
     } catch (e) {
       vscode3.window.showErrorMessage(e);
     }
   }));
   context.subscriptions.push(disposable);
 }
-function executeCommand(cmd) {
+function getFileName(filePath) {
+  const lastIndex = filePath.lastIndexOf("/");
+  if (lastIndex === -1) {
+    vscode3.window.showErrorMessage("File not found");
+  } else {
+    const fileName = filePath.slice(lastIndex + 1, filePath.length).replace(".sql", "");
+    return fileName;
+  }
+}
+function terminalResponse(terminal) {
   return __async(this, null, function* () {
-    vscode3.window.showInformationMessage("command running...");
-    const { stdout, stderr } = yield exec(cmd);
-    vscode3.window.showInformationMessage("command ran!");
-    return { stdout, stderr };
+    let counter = 1;
+    while (terminal.exitStatus.code !== 0) {
+      console.log(`${terminal.exitStatus.code}`);
+      console.log(`waiting...${counter}`);
+      counter++;
+      yield new Promise((resolve) => setTimeout(resolve, 250));
+    }
   });
+}
+function selectTerminal() {
+  let terminalExists = false;
+  if (vscode3.window.terminals.length === 0) {
+    const terminal = vscode3.window.createTerminal("dbt-bigquery-preview");
+    return terminal;
+  }
+  const terminals = vscode3.window.terminals;
+  const items = terminals.map((t) => {
+    return {
+      label: `${t.name}`,
+      terminal: t
+    };
+  });
+  for (const item of items) {
+    if (item.label === "dbt-bigquery-preview") {
+      terminalExists = true;
+      return item.terminal;
+    }
+  }
+  if (!terminalExists) {
+    const terminal = vscode3.window.createTerminal("dbt-bigquery-preview");
+    return terminal;
+  }
 }
 function deactivate() {
 }

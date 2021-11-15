@@ -46,10 +46,19 @@ function activate(context) {
 	const disposable = vscode.commands.registerCommand('dbt-bigquery-preview.runQuery', async () => {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
-			const fileName = filePath[filePath.length -1].replace('.sql', '');
-			const cmd = `dbt compile -s ${fileName}`;
-			const { stdout, stderr } = await executeCommand(cmd);
-			vscode.window.showInformationMessage(`${stderr}`);
+			const fileName = getFileName(filePath);
+			const terminal = selectTerminal();
+			terminal.sendText(`dbt compile -s ${fileName}`);
+			console.log(`${terminal.exitStatus.code}`);
+			await terminalResponse(terminal);
+			vscode.window.showInformationMessage("We awaited!");
+			await new Promise(resolve => setTimeout(resolve, 25000));
+			console.log(`${terminal.exitStatus.code}`);
+			terminal.dispose();
+			// const { stdout, stderr } = await executeCommand(cmd);
+			// console.log(`stderr: ${stderr}`);
+			// console.log(`stdout: ${stdout}`);
+			// vscode.window.showInformationMessage(`${stdout}`);
 			// const compiledQuery = getCompiledQuery(filePath);
 			// const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
 			// const data = queryResult[0][0].name;
@@ -62,6 +71,27 @@ function activate(context) {
 	context.subscriptions.push(disposable);
 }
 
+function getFileName(filePath) {
+	const lastIndex = filePath.lastIndexOf('/');
+	if (lastIndex === -1) {
+		vscode.window.showErrorMessage("File not found");
+	} else {
+		const fileName = filePath.slice(lastIndex + 1, filePath.length).replace('.sql', '');
+		return fileName;
+	}
+}
+
+// awaits for the command to end. Retries every 0.25 seconds.
+async function terminalResponse(terminal) {
+	let counter = 1;
+	while (terminal.exitStatus.code !== 0) {
+		console.log(`${terminal.exitStatus.code}`);
+		console.log(`waiting...${counter}`);
+		counter++;
+		await new Promise(resolve => setTimeout(resolve, 250));
+	}
+}
+
 function getCompiledQuery(filePath) {
     const filePathSplitted = filePath.split('/models/');
     const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
@@ -69,11 +99,29 @@ function getCompiledQuery(filePath) {
 	return compiledQuery;
 }
 
-async function executeCommand(cmd) {
-	vscode.window.showInformationMessage("command running...");
-    const { stdout, stderr } = await exec(cmd);
-	vscode.window.showInformationMessage("command ran!");
-	return { stdout, stderr };
+function selectTerminal() {
+	let terminalExists = false;
+	if((vscode.window).terminals.length === 0) {
+		const terminal = vscode.window.createTerminal('dbt-bigquery-preview');
+		return terminal;
+	}
+	const terminals = (vscode.window).terminals;
+	const items = terminals.map(t => {
+		return {
+			label: `${t.name}`,
+			terminal: t
+		};
+	});
+	for (const item of items) {
+		if (item.label === 'dbt-bigquery-preview') {
+			terminalExists = true;
+			return item.terminal;
+		}
+	}
+	if (!terminalExists) {
+		const terminal = vscode.window.createTerminal('dbt-bigquery-preview');
+		return terminal;
+	}
 }
 
 function deactivate() {}
@@ -84,13 +132,13 @@ module.exports = {
 }
 
 // to do
-// DONE 1. manage to get the path to the model in /compile
 // /home/juan/coding/learn/dbt/dbt-northwind-analytics/models/staging/stg_customers.sql to
 // /home/juan/coding/learn/dbt/dbt-northwind-analytics/target/compiled/northwind/models/staging/stg_customers.sql
 	// 1.1 get full path
 	// detect where /models start
 	// add /target/compiled/$dbt_project.name before the /models
 // 2. manage to do dbt compile of the model, show it in the cmd
+// Check how to get current workspace, so we can run dbt in the workspace where vscode is opened
 // 3. glue 1 & 2 together
 
 // utils
