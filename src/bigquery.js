@@ -3,9 +3,8 @@ const bigquery = require('@google-cloud/bigquery');
 const google_auth = require('./google_auth');
 
 export class BigQueryRunner {
-  constructor(config, editor) {
+  constructor(config) {
       this.config = config;
-      this.editor = editor;
       this.googleAuth = new google_auth.GoogleAuth();
 
       this.client = new bigquery.BigQuery({

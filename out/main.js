@@ -40911,9 +40911,8 @@ var init_bigquery = __esm({
     bigquery = require_src13();
     google_auth2 = (init_google_auth(), google_auth_exports);
     BigQueryRunner = class {
-      constructor(config2, editor) {
+      constructor(config2) {
         this.config = config2;
-        this.editor = editor;
         this.googleAuth = new google_auth2.GoogleAuth();
         this.client = new bigquery.BigQuery({
           userAgent: "dbt-bigquery-preview",
@@ -46593,15 +46592,11 @@ var yaml = require_yaml();
 var config;
 var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode3.workspace.workspaceFolders[0].uri.path;
+var dbtProjectName = getDbtProjectName(workspacePath);
+var fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
+var bigQueryRunner = new bigquery2.BigQueryRunner(config);
 function activate(context) {
   readConfig();
-  const fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
-  const dbtProjectName = getDbtProjectName(workspacePath);
-  const editor = vscode3.window.activeTextEditor;
-  if (!editor) {
-    return;
-  }
-  const bigQueryRunner = new bigquery2.BigQueryRunner(config, editor);
   context.subscriptions.push(vscode3.workspace.onDidChangeConfiguration((event) => {
     if (!event.affectsConfiguration(configPrefix)) {
       return;
@@ -46650,8 +46645,8 @@ function getDbtProjectName(workspacePath2) {
   try {
     const file = fs.readFileSync(`${workspacePath2}/dbt_project.yml`, "utf-8");
     const parsedFile = yaml.parse(file);
-    const dbtProjectName = parsedFile.name;
-    return dbtProjectName;
+    const dbtProjectName2 = parsedFile.name;
+    return dbtProjectName2;
   } catch (e) {
     vscode3.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
   }
@@ -46665,9 +46660,9 @@ function getFileName(filePath) {
     return fileName;
   }
 }
-function getCompiledPath(filePath, dbtProjectName) {
+function getCompiledPath(filePath, dbtProjectName2) {
   const filePathSplitted = filePath.split("/models/");
-  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName}/models/${filePathSplitted[1]}`;
+  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName2}/models/${filePathSplitted[1]}`;
   return compiledFilePath;
 }
 function getCompiledQuery(compiledFilePath) {

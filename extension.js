@@ -14,12 +14,7 @@ function activate(context) {
 		new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
 	);
 	const dbtProjectName = getDbtProjectName(workspacePath);
-	const editor = vscode.window.activeTextEditor;
-	if (!editor) {
-		return;
-	}
-
-	const bigQueryRunner = new bigquery.BigQueryRunner(config, editor);
+	const bigQueryRunner = new bigquery.BigQueryRunner(config);
 
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(event => {
