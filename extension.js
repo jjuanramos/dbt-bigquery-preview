@@ -13,6 +13,7 @@ function activate(context) {
 	const fileWatcher = vscode.workspace.createFileSystemWatcher(
 		new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
 	);
+	// add onDidChangeFile to update dbt project name if it changes
 	const dbtProjectName = getDbtProjectName(workspacePath);
 	const bigQueryRunner = new bigquery.BigQueryRunner(config);
 
@@ -35,23 +36,15 @@ function activate(context) {
 			terminal.sendText(`dbt compile -s ${fileName}`);
 
 			fileWatcher.onDidChange(async (uri) => {
-				const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
-				if (uri.toString().includes(compiledFilePath)) {
-					const compiledQuery = getCompiledQuery(compiledFilePath);
-					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
-					const data = queryResult[0][0].name;
-					vscode.window.showInformationMessage(`${data}`);
-				}
+				const queryResult = await getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
+				const data = queryResult[0][0].name;
+				vscode.window.showInformationMessage(`${data}`);
 			});
 
 			fileWatcher.onDidCreate(async (uri) => {
-				const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
-				if (uri.toString().includes(compiledFilePath)) {
-					const compiledQuery = getCompiledQuery(compiledFilePath);
-					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
-					const data = queryResult[0][0].name;
-					vscode.window.showInformationMessage(`${data}`);
-				}
+				const queryResult = await getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
+				const data = queryResult[0][0].name;
+				vscode.window.showInformationMessage(`${data}`);
 			});
 
 		} catch(e) {
@@ -102,6 +95,15 @@ function getCompiledPath(filePath, dbtProjectName) {
 function getCompiledQuery(compiledFilePath) {
     const compiledQuery = fs.readFileSync(compiledFilePath, 'utf-8');
 	return compiledQuery;
+}
+
+async function getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner) {
+	const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+	if (uri.toString().includes(compiledFilePath)) {
+		const compiledQuery = getCompiledQuery(compiledFilePath);
+		const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
+		return queryResult;
+	}
 }
 
 function selectTerminal() {

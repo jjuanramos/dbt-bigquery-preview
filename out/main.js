@@ -46592,11 +46592,11 @@ var yaml = require_yaml();
 var config;
 var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode3.workspace.workspaceFolders[0].uri.path;
-var dbtProjectName = getDbtProjectName(workspacePath);
-var fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
-var bigQueryRunner = new bigquery2.BigQueryRunner(config);
 function activate(context) {
   readConfig();
+  const fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
+  const dbtProjectName = getDbtProjectName(workspacePath);
+  const bigQueryRunner = new bigquery2.BigQueryRunner(config);
   context.subscriptions.push(vscode3.workspace.onDidChangeConfiguration((event) => {
     if (!event.affectsConfiguration(configPrefix)) {
       return;
@@ -46611,22 +46611,14 @@ function activate(context) {
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
-        if (uri.toString().includes(compiledFilePath)) {
-          const compiledQuery = getCompiledQuery(compiledFilePath);
-          const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
-          const data = queryResult[0][0].name;
-          vscode3.window.showInformationMessage(`${data}`);
-        }
+        const queryResult = yield getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
+        const data = queryResult[0][0].name;
+        vscode3.window.showInformationMessage(`${data}`);
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
-        if (uri.toString().includes(compiledFilePath)) {
-          const compiledQuery = getCompiledQuery(compiledFilePath);
-          const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
-          const data = queryResult[0][0].name;
-          vscode3.window.showInformationMessage(`${data}`);
-        }
+        const queryResult = yield getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
+        const data = queryResult[0][0].name;
+        vscode3.window.showInformationMessage(`${data}`);
       }));
     } catch (e) {
       vscode3.window.showErrorMessage(e);
@@ -46645,8 +46637,8 @@ function getDbtProjectName(workspacePath2) {
   try {
     const file = fs.readFileSync(`${workspacePath2}/dbt_project.yml`, "utf-8");
     const parsedFile = yaml.parse(file);
-    const dbtProjectName2 = parsedFile.name;
-    return dbtProjectName2;
+    const dbtProjectName = parsedFile.name;
+    return dbtProjectName;
   } catch (e) {
     vscode3.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
   }
@@ -46660,14 +46652,24 @@ function getFileName(filePath) {
     return fileName;
   }
 }
-function getCompiledPath(filePath, dbtProjectName2) {
+function getCompiledPath(filePath, dbtProjectName) {
   const filePathSplitted = filePath.split("/models/");
-  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName2}/models/${filePathSplitted[1]}`;
+  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName}/models/${filePathSplitted[1]}`;
   return compiledFilePath;
 }
 function getCompiledQuery(compiledFilePath) {
   const compiledQuery = fs.readFileSync(compiledFilePath, "utf-8");
   return compiledQuery;
+}
+function getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner) {
+  return __async(this, null, function* () {
+    const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+    if (uri.toString().includes(compiledFilePath)) {
+      const compiledQuery = getCompiledQuery(compiledFilePath);
+      const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
+      return queryResult;
+    }
+  });
 }
 function selectTerminal() {
   let terminalExists = false;
