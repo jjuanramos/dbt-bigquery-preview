@@ -2,18 +2,21 @@ const vscode = require('vscode');
 const bigquery = require('./src/bigquery');
 const fs = require('fs');
 const yaml = require('yaml');
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
 
 
 let config;
 const configPrefix = 'dbt-bigquery-preview';
 
 // assumes the extension is opened in the dbt directory -> Document it
-const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
+const wpFolders = vscode.workspace.workspaceFolders;
+const workspacePath = wpFolders[0].uri.path;
 const file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, 'utf-8');
 const parsedFile = yaml.parse(file);
 const projectName = parsedFile.name;
+
+const fileWatcher = vscode.workspace.createFileSystemWatcher(
+	new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
+);
 
 function readConfig() {
 	try {
@@ -49,20 +52,24 @@ function activate(context) {
 			const fileName = getFileName(filePath);
 			const terminal = selectTerminal();
 			terminal.sendText(`dbt compile -s ${fileName}`);
-			console.log(`${terminal.exitStatus.code}`);
-			await terminalResponse(terminal);
-			vscode.window.showInformationMessage("We awaited!");
-			await new Promise(resolve => setTimeout(resolve, 25000));
-			console.log(`${terminal.exitStatus.code}`);
-			terminal.dispose();
-			// const { stdout, stderr } = await executeCommand(cmd);
-			// console.log(`stderr: ${stderr}`);
-			// console.log(`stdout: ${stdout}`);
-			// vscode.window.showInformationMessage(`${stdout}`);
-			// const compiledQuery = getCompiledQuery(filePath);
-			// const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
-			// const data = queryResult[0][0].name;
-			// vscode.window.showInformationMessage(`${data}`);
+			console.log("We compiled the file!");
+			fileWatcher.onDidChange(async (uri) => {
+				console.log("we detected the file changed!");
+				console.log(`${uri.toString()}`);
+				console.log(`${filePath}`);
+				// file path is different, we need compiled file path
+				// divided getCompiledQuery in getCompiledPath and getCompiledQuery,
+				// then check if uri includes compiledPath
+				if (uri.toString().includes(filePath)) {
+					console.log("the uri contains the file!");
+					const compiledQuery = getCompiledQuery(filePath);
+					console.log(`${compiledQuery}`);
+					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
+					console.log("We ran the query!");
+					const data = queryResult[0][0].name;
+					vscode.window.showInformationMessage(`${data}`);
+				}
+			});
 		} catch(e) {
 			vscode.window.showErrorMessage(e);
 		}
@@ -78,17 +85,6 @@ function getFileName(filePath) {
 	} else {
 		const fileName = filePath.slice(lastIndex + 1, filePath.length).replace('.sql', '');
 		return fileName;
-	}
-}
-
-// awaits for the command to end. Retries every 0.25 seconds.
-async function terminalResponse(terminal) {
-	let counter = 1;
-	while (terminal.exitStatus.code !== 0) {
-		console.log(`${terminal.exitStatus.code}`);
-		console.log(`waiting...${counter}`);
-		counter++;
-		await new Promise(resolve => setTimeout(resolve, 250));
 	}
 }
 
@@ -124,7 +120,9 @@ function selectTerminal() {
 	}
 }
 
-function deactivate() {}
+function deactivate() {
+	fileWatcher.dispose();
+}
 
 module.exports = {
 	activate,

@@ -7425,14 +7425,14 @@ var require_supports_color = __commonJS({
 var require_node = __commonJS({
   "node_modules/debug/src/node.js"(exports2, module2) {
     var tty = require("tty");
-    var util2 = require("util");
+    var util = require("util");
     exports2.init = init;
     exports2.log = log;
     exports2.formatArgs = formatArgs;
     exports2.save = save;
     exports2.load = load;
     exports2.useColors = useColors;
-    exports2.destroy = util2.deprecate(() => {
+    exports2.destroy = util.deprecate(() => {
     }, "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
     exports2.colors = [6, 2, 3, 4, 5, 1];
     try {
@@ -7560,7 +7560,7 @@ var require_node = __commonJS({
       return new Date().toISOString() + " ";
     }
     function log(...args) {
-      return process.stderr.write(util2.format(...args) + "\n");
+      return process.stderr.write(util.format(...args) + "\n");
     }
     function save(namespaces) {
       if (namespaces) {
@@ -7583,11 +7583,11 @@ var require_node = __commonJS({
     var { formatters } = module2.exports;
     formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+      return util.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
     };
     formatters.O = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts);
+      return util.inspect(v, this.inspectOpts);
     };
   }
 });
@@ -11937,7 +11937,7 @@ var require_data_stream = __commonJS({
   "node_modules/jws/lib/data-stream.js"(exports2, module2) {
     var Buffer2 = require_safe_buffer().Buffer;
     var Stream = require("stream");
-    var util2 = require("util");
+    var util = require("util");
     function DataStream(data) {
       this.buffer = null;
       this.writable = true;
@@ -11963,7 +11963,7 @@ var require_data_stream = __commonJS({
       }
       throw new TypeError("Unexpected data type (" + typeof data + ")");
     }
-    util2.inherits(DataStream, Stream);
+    util.inherits(DataStream, Stream);
     DataStream.prototype.write = function write(data) {
       this.buffer = Buffer2.concat([this.buffer, Buffer2.from(data)]);
       this.emit("data", data);
@@ -12021,7 +12021,7 @@ var require_jwa = __commonJS({
     var Buffer2 = require_safe_buffer().Buffer;
     var crypto2 = require("crypto");
     var formatEcdsa = require_ecdsa_sig_formatter();
-    var util2 = require("util");
+    var util = require("util");
     var MSG_INVALID_ALGORITHM = '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
     var MSG_INVALID_SECRET = "secret must be a string or buffer";
     var MSG_INVALID_VERIFIER_KEY = "key must be a string or a buffer";
@@ -12101,7 +12101,7 @@ var require_jwa = __commonJS({
     }
     function typeError(template) {
       var args = [].slice.call(arguments, 1);
-      var errMsg = util2.format.bind(util2, template).apply(null, args);
+      var errMsg = util.format.bind(util, template).apply(null, args);
       return new TypeError(errMsg);
     }
     function bufferOrString(obj) {
@@ -12249,7 +12249,7 @@ var require_sign_stream = __commonJS({
     var jwa = require_jwa();
     var Stream = require("stream");
     var toString = require_tostring();
-    var util2 = require("util");
+    var util = require("util");
     function base64url(string, encoding) {
       return Buffer2.from(string, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
     }
@@ -12257,7 +12257,7 @@ var require_sign_stream = __commonJS({
       encoding = encoding || "utf8";
       var encodedHeader = base64url(toString(header), "binary");
       var encodedPayload = base64url(toString(payload), encoding);
-      return util2.format("%s.%s", encodedHeader, encodedPayload);
+      return util.format("%s.%s", encodedHeader, encodedPayload);
     }
     function jwsSign(opts) {
       var header = opts.header;
@@ -12267,7 +12267,7 @@ var require_sign_stream = __commonJS({
       var algo = jwa(header.alg);
       var securedInput = jwsSecuredInput(header, payload, encoding);
       var signature = algo.sign(securedInput, secretOrKey);
-      return util2.format("%s.%s", securedInput, signature);
+      return util.format("%s.%s", securedInput, signature);
     }
     function SignStream(opts) {
       var secret = opts.secret || opts.privateKey || opts.key;
@@ -12286,7 +12286,7 @@ var require_sign_stream = __commonJS({
           this.sign();
       }.bind(this));
     }
-    util2.inherits(SignStream, Stream);
+    util.inherits(SignStream, Stream);
     SignStream.prototype.sign = function sign() {
       try {
         var signature = jwsSign({
@@ -12319,7 +12319,7 @@ var require_verify_stream = __commonJS({
     var jwa = require_jwa();
     var Stream = require("stream");
     var toString = require_tostring();
-    var util2 = require("util");
+    var util = require("util");
     var JWS_REGEX = /^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/;
     function isObject(thing) {
       return Object.prototype.toString.call(thing) === "[object Object]";
@@ -12398,7 +12398,7 @@ var require_verify_stream = __commonJS({
           this.verify();
       }.bind(this));
     }
-    util2.inherits(VerifyStream, Stream);
+    util.inherits(VerifyStream, Stream);
     VerifyStream.prototype.verify = function verify() {
       try {
         var valid = jwsVerify(this.signature.buffer, this.algorithm, this.key.buffer);
@@ -12584,27 +12584,27 @@ var require_util = __commonJS({
   "node_modules/node-forge/lib/util.js"(exports2, module2) {
     var forge = require_forge();
     var baseN = require_baseN();
-    var util2 = module2.exports = forge.util = forge.util || {};
+    var util = module2.exports = forge.util = forge.util || {};
     (function() {
       if (typeof process !== "undefined" && process.nextTick && !process.browser) {
-        util2.nextTick = process.nextTick;
+        util.nextTick = process.nextTick;
         if (typeof setImmediate === "function") {
-          util2.setImmediate = setImmediate;
+          util.setImmediate = setImmediate;
         } else {
-          util2.setImmediate = util2.nextTick;
+          util.setImmediate = util.nextTick;
         }
         return;
       }
       if (typeof setImmediate === "function") {
-        util2.setImmediate = function() {
+        util.setImmediate = function() {
           return setImmediate.apply(void 0, arguments);
         };
-        util2.nextTick = function(callback) {
+        util.nextTick = function(callback) {
           return setImmediate(callback);
         };
         return;
       }
-      util2.setImmediate = function(callback) {
+      util.setImmediate = function(callback) {
         setTimeout(callback, 0);
       };
       if (typeof window !== "undefined" && typeof window.postMessage === "function") {
@@ -12621,7 +12621,7 @@ var require_util = __commonJS({
         var handler = handler2;
         var msg = "forge.setImmediate";
         var callbacks = [];
-        util2.setImmediate = function(callback) {
+        util.setImmediate = function(callback) {
           callbacks.push(callback);
           if (callbacks.length === 1) {
             window.postMessage(msg, "*");
@@ -12641,8 +12641,8 @@ var require_util = __commonJS({
             callback();
           });
         }).observe(div, { attributes: true });
-        var oldSetImmediate = util2.setImmediate;
-        util2.setImmediate = function(callback) {
+        var oldSetImmediate = util.setImmediate;
+        util.setImmediate = function(callback) {
           if (Date.now() - now > 15) {
             now = Date.now();
             oldSetImmediate(callback);
@@ -12654,36 +12654,36 @@ var require_util = __commonJS({
           }
         };
       }
-      util2.nextTick = util2.setImmediate;
+      util.nextTick = util.setImmediate;
     })();
-    util2.isNodejs = typeof process !== "undefined" && process.versions && process.versions.node;
-    util2.globalScope = function() {
-      if (util2.isNodejs) {
+    util.isNodejs = typeof process !== "undefined" && process.versions && process.versions.node;
+    util.globalScope = function() {
+      if (util.isNodejs) {
         return global;
       }
       return typeof self === "undefined" ? window : self;
     }();
-    util2.isArray = Array.isArray || function(x) {
+    util.isArray = Array.isArray || function(x) {
       return Object.prototype.toString.call(x) === "[object Array]";
     };
-    util2.isArrayBuffer = function(x) {
+    util.isArrayBuffer = function(x) {
       return typeof ArrayBuffer !== "undefined" && x instanceof ArrayBuffer;
     };
-    util2.isArrayBufferView = function(x) {
-      return x && util2.isArrayBuffer(x.buffer) && x.byteLength !== void 0;
+    util.isArrayBufferView = function(x) {
+      return x && util.isArrayBuffer(x.buffer) && x.byteLength !== void 0;
     };
     function _checkBitsParam(n) {
       if (!(n === 8 || n === 16 || n === 24 || n === 32)) {
         throw new Error("Only 8, 16, 24, or 32 bits supported: " + n);
       }
     }
-    util2.ByteBuffer = ByteStringBuffer;
+    util.ByteBuffer = ByteStringBuffer;
     function ByteStringBuffer(b) {
       this.data = "";
       this.read = 0;
       if (typeof b === "string") {
         this.data = b;
-      } else if (util2.isArrayBuffer(b) || util2.isArrayBufferView(b)) {
+      } else if (util.isArrayBuffer(b) || util.isArrayBufferView(b)) {
         if (typeof Buffer !== "undefined" && b instanceof Buffer) {
           this.data = b.toString("binary");
         } else {
@@ -12702,25 +12702,25 @@ var require_util = __commonJS({
       }
       this._constructedStringLength = 0;
     }
-    util2.ByteStringBuffer = ByteStringBuffer;
+    util.ByteStringBuffer = ByteStringBuffer;
     var _MAX_CONSTRUCTED_STRING_LENGTH = 4096;
-    util2.ByteStringBuffer.prototype._optimizeConstructedString = function(x) {
+    util.ByteStringBuffer.prototype._optimizeConstructedString = function(x) {
       this._constructedStringLength += x;
       if (this._constructedStringLength > _MAX_CONSTRUCTED_STRING_LENGTH) {
         this.data.substr(0, 1);
         this._constructedStringLength = 0;
       }
     };
-    util2.ByteStringBuffer.prototype.length = function() {
+    util.ByteStringBuffer.prototype.length = function() {
       return this.data.length - this.read;
     };
-    util2.ByteStringBuffer.prototype.isEmpty = function() {
+    util.ByteStringBuffer.prototype.isEmpty = function() {
       return this.length() <= 0;
     };
-    util2.ByteStringBuffer.prototype.putByte = function(b) {
+    util.ByteStringBuffer.prototype.putByte = function(b) {
       return this.putBytes(String.fromCharCode(b));
     };
-    util2.ByteStringBuffer.prototype.fillWithByte = function(b, n) {
+    util.ByteStringBuffer.prototype.fillWithByte = function(b, n) {
       b = String.fromCharCode(b);
       var d = this.data;
       while (n > 0) {
@@ -12736,33 +12736,33 @@ var require_util = __commonJS({
       this._optimizeConstructedString(n);
       return this;
     };
-    util2.ByteStringBuffer.prototype.putBytes = function(bytes) {
+    util.ByteStringBuffer.prototype.putBytes = function(bytes) {
       this.data += bytes;
       this._optimizeConstructedString(bytes.length);
       return this;
     };
-    util2.ByteStringBuffer.prototype.putString = function(str) {
-      return this.putBytes(util2.encodeUtf8(str));
+    util.ByteStringBuffer.prototype.putString = function(str) {
+      return this.putBytes(util.encodeUtf8(str));
     };
-    util2.ByteStringBuffer.prototype.putInt16 = function(i) {
+    util.ByteStringBuffer.prototype.putInt16 = function(i) {
       return this.putBytes(String.fromCharCode(i >> 8 & 255) + String.fromCharCode(i & 255));
     };
-    util2.ByteStringBuffer.prototype.putInt24 = function(i) {
+    util.ByteStringBuffer.prototype.putInt24 = function(i) {
       return this.putBytes(String.fromCharCode(i >> 16 & 255) + String.fromCharCode(i >> 8 & 255) + String.fromCharCode(i & 255));
     };
-    util2.ByteStringBuffer.prototype.putInt32 = function(i) {
+    util.ByteStringBuffer.prototype.putInt32 = function(i) {
       return this.putBytes(String.fromCharCode(i >> 24 & 255) + String.fromCharCode(i >> 16 & 255) + String.fromCharCode(i >> 8 & 255) + String.fromCharCode(i & 255));
     };
-    util2.ByteStringBuffer.prototype.putInt16Le = function(i) {
+    util.ByteStringBuffer.prototype.putInt16Le = function(i) {
       return this.putBytes(String.fromCharCode(i & 255) + String.fromCharCode(i >> 8 & 255));
     };
-    util2.ByteStringBuffer.prototype.putInt24Le = function(i) {
+    util.ByteStringBuffer.prototype.putInt24Le = function(i) {
       return this.putBytes(String.fromCharCode(i & 255) + String.fromCharCode(i >> 8 & 255) + String.fromCharCode(i >> 16 & 255));
     };
-    util2.ByteStringBuffer.prototype.putInt32Le = function(i) {
+    util.ByteStringBuffer.prototype.putInt32Le = function(i) {
       return this.putBytes(String.fromCharCode(i & 255) + String.fromCharCode(i >> 8 & 255) + String.fromCharCode(i >> 16 & 255) + String.fromCharCode(i >> 24 & 255));
     };
-    util2.ByteStringBuffer.prototype.putInt = function(i, n) {
+    util.ByteStringBuffer.prototype.putInt = function(i, n) {
       _checkBitsParam(n);
       var bytes = "";
       do {
@@ -12771,49 +12771,49 @@ var require_util = __commonJS({
       } while (n > 0);
       return this.putBytes(bytes);
     };
-    util2.ByteStringBuffer.prototype.putSignedInt = function(i, n) {
+    util.ByteStringBuffer.prototype.putSignedInt = function(i, n) {
       if (i < 0) {
         i += 2 << n - 1;
       }
       return this.putInt(i, n);
     };
-    util2.ByteStringBuffer.prototype.putBuffer = function(buffer) {
+    util.ByteStringBuffer.prototype.putBuffer = function(buffer) {
       return this.putBytes(buffer.getBytes());
     };
-    util2.ByteStringBuffer.prototype.getByte = function() {
+    util.ByteStringBuffer.prototype.getByte = function() {
       return this.data.charCodeAt(this.read++);
     };
-    util2.ByteStringBuffer.prototype.getInt16 = function() {
+    util.ByteStringBuffer.prototype.getInt16 = function() {
       var rval = this.data.charCodeAt(this.read) << 8 ^ this.data.charCodeAt(this.read + 1);
       this.read += 2;
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getInt24 = function() {
+    util.ByteStringBuffer.prototype.getInt24 = function() {
       var rval = this.data.charCodeAt(this.read) << 16 ^ this.data.charCodeAt(this.read + 1) << 8 ^ this.data.charCodeAt(this.read + 2);
       this.read += 3;
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getInt32 = function() {
+    util.ByteStringBuffer.prototype.getInt32 = function() {
       var rval = this.data.charCodeAt(this.read) << 24 ^ this.data.charCodeAt(this.read + 1) << 16 ^ this.data.charCodeAt(this.read + 2) << 8 ^ this.data.charCodeAt(this.read + 3);
       this.read += 4;
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getInt16Le = function() {
+    util.ByteStringBuffer.prototype.getInt16Le = function() {
       var rval = this.data.charCodeAt(this.read) ^ this.data.charCodeAt(this.read + 1) << 8;
       this.read += 2;
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getInt24Le = function() {
+    util.ByteStringBuffer.prototype.getInt24Le = function() {
       var rval = this.data.charCodeAt(this.read) ^ this.data.charCodeAt(this.read + 1) << 8 ^ this.data.charCodeAt(this.read + 2) << 16;
       this.read += 3;
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getInt32Le = function() {
+    util.ByteStringBuffer.prototype.getInt32Le = function() {
       var rval = this.data.charCodeAt(this.read) ^ this.data.charCodeAt(this.read + 1) << 8 ^ this.data.charCodeAt(this.read + 2) << 16 ^ this.data.charCodeAt(this.read + 3) << 24;
       this.read += 4;
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getInt = function(n) {
+    util.ByteStringBuffer.prototype.getInt = function(n) {
       _checkBitsParam(n);
       var rval = 0;
       do {
@@ -12822,7 +12822,7 @@ var require_util = __commonJS({
       } while (n > 0);
       return rval;
     };
-    util2.ByteStringBuffer.prototype.getSignedInt = function(n) {
+    util.ByteStringBuffer.prototype.getSignedInt = function(n) {
       var x = this.getInt(n);
       var max = 2 << n - 2;
       if (x >= max) {
@@ -12830,7 +12830,7 @@ var require_util = __commonJS({
       }
       return x;
     };
-    util2.ByteStringBuffer.prototype.getBytes = function(count) {
+    util.ByteStringBuffer.prototype.getBytes = function(count) {
       var rval;
       if (count) {
         count = Math.min(this.length(), count);
@@ -12844,43 +12844,43 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.ByteStringBuffer.prototype.bytes = function(count) {
+    util.ByteStringBuffer.prototype.bytes = function(count) {
       return typeof count === "undefined" ? this.data.slice(this.read) : this.data.slice(this.read, this.read + count);
     };
-    util2.ByteStringBuffer.prototype.at = function(i) {
+    util.ByteStringBuffer.prototype.at = function(i) {
       return this.data.charCodeAt(this.read + i);
     };
-    util2.ByteStringBuffer.prototype.setAt = function(i, b) {
+    util.ByteStringBuffer.prototype.setAt = function(i, b) {
       this.data = this.data.substr(0, this.read + i) + String.fromCharCode(b) + this.data.substr(this.read + i + 1);
       return this;
     };
-    util2.ByteStringBuffer.prototype.last = function() {
+    util.ByteStringBuffer.prototype.last = function() {
       return this.data.charCodeAt(this.data.length - 1);
     };
-    util2.ByteStringBuffer.prototype.copy = function() {
-      var c = util2.createBuffer(this.data);
+    util.ByteStringBuffer.prototype.copy = function() {
+      var c = util.createBuffer(this.data);
       c.read = this.read;
       return c;
     };
-    util2.ByteStringBuffer.prototype.compact = function() {
+    util.ByteStringBuffer.prototype.compact = function() {
       if (this.read > 0) {
         this.data = this.data.slice(this.read);
         this.read = 0;
       }
       return this;
     };
-    util2.ByteStringBuffer.prototype.clear = function() {
+    util.ByteStringBuffer.prototype.clear = function() {
       this.data = "";
       this.read = 0;
       return this;
     };
-    util2.ByteStringBuffer.prototype.truncate = function(count) {
+    util.ByteStringBuffer.prototype.truncate = function(count) {
       var len = Math.max(0, this.length() - count);
       this.data = this.data.substr(this.read, len);
       this.read = 0;
       return this;
     };
-    util2.ByteStringBuffer.prototype.toHex = function() {
+    util.ByteStringBuffer.prototype.toHex = function() {
       var rval = "";
       for (var i = this.read; i < this.data.length; ++i) {
         var b = this.data.charCodeAt(i);
@@ -12891,15 +12891,15 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.ByteStringBuffer.prototype.toString = function() {
-      return util2.decodeUtf8(this.bytes());
+    util.ByteStringBuffer.prototype.toString = function() {
+      return util.decodeUtf8(this.bytes());
     };
     function DataBuffer(b, options) {
       options = options || {};
       this.read = options.readOffset || 0;
       this.growSize = options.growSize || 1024;
-      var isArrayBuffer = util2.isArrayBuffer(b);
-      var isArrayBufferView = util2.isArrayBufferView(b);
+      var isArrayBuffer = util.isArrayBuffer(b);
+      var isArrayBufferView = util.isArrayBufferView(b);
       if (isArrayBuffer || isArrayBufferView) {
         if (isArrayBuffer) {
           this.data = new DataView(b);
@@ -12918,14 +12918,14 @@ var require_util = __commonJS({
         this.write = options.writeOffset;
       }
     }
-    util2.DataBuffer = DataBuffer;
-    util2.DataBuffer.prototype.length = function() {
+    util.DataBuffer = DataBuffer;
+    util.DataBuffer.prototype.length = function() {
       return this.write - this.read;
     };
-    util2.DataBuffer.prototype.isEmpty = function() {
+    util.DataBuffer.prototype.isEmpty = function() {
       return this.length() <= 0;
     };
-    util2.DataBuffer.prototype.accommodate = function(amount, growSize) {
+    util.DataBuffer.prototype.accommodate = function(amount, growSize) {
       if (this.length() >= amount) {
         return this;
       }
@@ -12936,20 +12936,20 @@ var require_util = __commonJS({
       this.data = new DataView(dst.buffer);
       return this;
     };
-    util2.DataBuffer.prototype.putByte = function(b) {
+    util.DataBuffer.prototype.putByte = function(b) {
       this.accommodate(1);
       this.data.setUint8(this.write++, b);
       return this;
     };
-    util2.DataBuffer.prototype.fillWithByte = function(b, n) {
+    util.DataBuffer.prototype.fillWithByte = function(b, n) {
       this.accommodate(n);
       for (var i = 0; i < n; ++i) {
         this.data.setUint8(b);
       }
       return this;
     };
-    util2.DataBuffer.prototype.putBytes = function(bytes, encoding) {
-      if (util2.isArrayBufferView(bytes)) {
+    util.DataBuffer.prototype.putBytes = function(bytes, encoding) {
+      if (util.isArrayBufferView(bytes)) {
         var src = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
         var len = src.byteLength - src.byteOffset;
         this.accommodate(len);
@@ -12958,7 +12958,7 @@ var require_util = __commonJS({
         this.write += len;
         return this;
       }
-      if (util2.isArrayBuffer(bytes)) {
+      if (util.isArrayBuffer(bytes)) {
         var src = new Uint8Array(bytes);
         this.accommodate(src.byteLength);
         var dst = new Uint8Array(this.data.buffer);
@@ -12966,7 +12966,7 @@ var require_util = __commonJS({
         this.write += src.byteLength;
         return this;
       }
-      if (bytes instanceof util2.DataBuffer || typeof bytes === "object" && typeof bytes.read === "number" && typeof bytes.write === "number" && util2.isArrayBufferView(bytes.data)) {
+      if (bytes instanceof util.DataBuffer || typeof bytes === "object" && typeof bytes.read === "number" && typeof bytes.write === "number" && util.isArrayBufferView(bytes.data)) {
         var src = new Uint8Array(bytes.data.byteLength, bytes.read, bytes.length());
         this.accommodate(src.byteLength);
         var dst = new Uint8Array(bytes.data.byteLength, this.write);
@@ -12974,7 +12974,7 @@ var require_util = __commonJS({
         this.write += src.byteLength;
         return this;
       }
-      if (bytes instanceof util2.ByteStringBuffer) {
+      if (bytes instanceof util.ByteStringBuffer) {
         bytes = bytes.data;
         encoding = "binary";
       }
@@ -12984,82 +12984,82 @@ var require_util = __commonJS({
         if (encoding === "hex") {
           this.accommodate(Math.ceil(bytes.length / 2));
           view = new Uint8Array(this.data.buffer, this.write);
-          this.write += util2.binary.hex.decode(bytes, view, this.write);
+          this.write += util.binary.hex.decode(bytes, view, this.write);
           return this;
         }
         if (encoding === "base64") {
           this.accommodate(Math.ceil(bytes.length / 4) * 3);
           view = new Uint8Array(this.data.buffer, this.write);
-          this.write += util2.binary.base64.decode(bytes, view, this.write);
+          this.write += util.binary.base64.decode(bytes, view, this.write);
           return this;
         }
         if (encoding === "utf8") {
-          bytes = util2.encodeUtf8(bytes);
+          bytes = util.encodeUtf8(bytes);
           encoding = "binary";
         }
         if (encoding === "binary" || encoding === "raw") {
           this.accommodate(bytes.length);
           view = new Uint8Array(this.data.buffer, this.write);
-          this.write += util2.binary.raw.decode(view);
+          this.write += util.binary.raw.decode(view);
           return this;
         }
         if (encoding === "utf16") {
           this.accommodate(bytes.length * 2);
           view = new Uint16Array(this.data.buffer, this.write);
-          this.write += util2.text.utf16.encode(view);
+          this.write += util.text.utf16.encode(view);
           return this;
         }
         throw new Error("Invalid encoding: " + encoding);
       }
       throw Error("Invalid parameter: " + bytes);
     };
-    util2.DataBuffer.prototype.putBuffer = function(buffer) {
+    util.DataBuffer.prototype.putBuffer = function(buffer) {
       this.putBytes(buffer);
       buffer.clear();
       return this;
     };
-    util2.DataBuffer.prototype.putString = function(str) {
+    util.DataBuffer.prototype.putString = function(str) {
       return this.putBytes(str, "utf16");
     };
-    util2.DataBuffer.prototype.putInt16 = function(i) {
+    util.DataBuffer.prototype.putInt16 = function(i) {
       this.accommodate(2);
       this.data.setInt16(this.write, i);
       this.write += 2;
       return this;
     };
-    util2.DataBuffer.prototype.putInt24 = function(i) {
+    util.DataBuffer.prototype.putInt24 = function(i) {
       this.accommodate(3);
       this.data.setInt16(this.write, i >> 8 & 65535);
       this.data.setInt8(this.write, i >> 16 & 255);
       this.write += 3;
       return this;
     };
-    util2.DataBuffer.prototype.putInt32 = function(i) {
+    util.DataBuffer.prototype.putInt32 = function(i) {
       this.accommodate(4);
       this.data.setInt32(this.write, i);
       this.write += 4;
       return this;
     };
-    util2.DataBuffer.prototype.putInt16Le = function(i) {
+    util.DataBuffer.prototype.putInt16Le = function(i) {
       this.accommodate(2);
       this.data.setInt16(this.write, i, true);
       this.write += 2;
       return this;
     };
-    util2.DataBuffer.prototype.putInt24Le = function(i) {
+    util.DataBuffer.prototype.putInt24Le = function(i) {
       this.accommodate(3);
       this.data.setInt8(this.write, i >> 16 & 255);
       this.data.setInt16(this.write, i >> 8 & 65535, true);
       this.write += 3;
       return this;
     };
-    util2.DataBuffer.prototype.putInt32Le = function(i) {
+    util.DataBuffer.prototype.putInt32Le = function(i) {
       this.accommodate(4);
       this.data.setInt32(this.write, i, true);
       this.write += 4;
       return this;
     };
-    util2.DataBuffer.prototype.putInt = function(i, n) {
+    util.DataBuffer.prototype.putInt = function(i, n) {
       _checkBitsParam(n);
       this.accommodate(n / 8);
       do {
@@ -13068,7 +13068,7 @@ var require_util = __commonJS({
       } while (n > 0);
       return this;
     };
-    util2.DataBuffer.prototype.putSignedInt = function(i, n) {
+    util.DataBuffer.prototype.putSignedInt = function(i, n) {
       _checkBitsParam(n);
       this.accommodate(n / 8);
       if (i < 0) {
@@ -13076,40 +13076,40 @@ var require_util = __commonJS({
       }
       return this.putInt(i, n);
     };
-    util2.DataBuffer.prototype.getByte = function() {
+    util.DataBuffer.prototype.getByte = function() {
       return this.data.getInt8(this.read++);
     };
-    util2.DataBuffer.prototype.getInt16 = function() {
+    util.DataBuffer.prototype.getInt16 = function() {
       var rval = this.data.getInt16(this.read);
       this.read += 2;
       return rval;
     };
-    util2.DataBuffer.prototype.getInt24 = function() {
+    util.DataBuffer.prototype.getInt24 = function() {
       var rval = this.data.getInt16(this.read) << 8 ^ this.data.getInt8(this.read + 2);
       this.read += 3;
       return rval;
     };
-    util2.DataBuffer.prototype.getInt32 = function() {
+    util.DataBuffer.prototype.getInt32 = function() {
       var rval = this.data.getInt32(this.read);
       this.read += 4;
       return rval;
     };
-    util2.DataBuffer.prototype.getInt16Le = function() {
+    util.DataBuffer.prototype.getInt16Le = function() {
       var rval = this.data.getInt16(this.read, true);
       this.read += 2;
       return rval;
     };
-    util2.DataBuffer.prototype.getInt24Le = function() {
+    util.DataBuffer.prototype.getInt24Le = function() {
       var rval = this.data.getInt8(this.read) ^ this.data.getInt16(this.read + 1, true) << 8;
       this.read += 3;
       return rval;
     };
-    util2.DataBuffer.prototype.getInt32Le = function() {
+    util.DataBuffer.prototype.getInt32Le = function() {
       var rval = this.data.getInt32(this.read, true);
       this.read += 4;
       return rval;
     };
-    util2.DataBuffer.prototype.getInt = function(n) {
+    util.DataBuffer.prototype.getInt = function(n) {
       _checkBitsParam(n);
       var rval = 0;
       do {
@@ -13118,7 +13118,7 @@ var require_util = __commonJS({
       } while (n > 0);
       return rval;
     };
-    util2.DataBuffer.prototype.getSignedInt = function(n) {
+    util.DataBuffer.prototype.getSignedInt = function(n) {
       var x = this.getInt(n);
       var max = 2 << n - 2;
       if (x >= max) {
@@ -13126,7 +13126,7 @@ var require_util = __commonJS({
       }
       return x;
     };
-    util2.DataBuffer.prototype.getBytes = function(count) {
+    util.DataBuffer.prototype.getBytes = function(count) {
       var rval;
       if (count) {
         count = Math.min(this.length(), count);
@@ -13140,23 +13140,23 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.DataBuffer.prototype.bytes = function(count) {
+    util.DataBuffer.prototype.bytes = function(count) {
       return typeof count === "undefined" ? this.data.slice(this.read) : this.data.slice(this.read, this.read + count);
     };
-    util2.DataBuffer.prototype.at = function(i) {
+    util.DataBuffer.prototype.at = function(i) {
       return this.data.getUint8(this.read + i);
     };
-    util2.DataBuffer.prototype.setAt = function(i, b) {
+    util.DataBuffer.prototype.setAt = function(i, b) {
       this.data.setUint8(i, b);
       return this;
     };
-    util2.DataBuffer.prototype.last = function() {
+    util.DataBuffer.prototype.last = function() {
       return this.data.getUint8(this.write - 1);
     };
-    util2.DataBuffer.prototype.copy = function() {
-      return new util2.DataBuffer(this);
+    util.DataBuffer.prototype.copy = function() {
+      return new util.DataBuffer(this);
     };
-    util2.DataBuffer.prototype.compact = function() {
+    util.DataBuffer.prototype.compact = function() {
       if (this.read > 0) {
         var src = new Uint8Array(this.data.buffer, this.read);
         var dst = new Uint8Array(src.byteLength);
@@ -13167,17 +13167,17 @@ var require_util = __commonJS({
       }
       return this;
     };
-    util2.DataBuffer.prototype.clear = function() {
+    util.DataBuffer.prototype.clear = function() {
       this.data = new DataView(new ArrayBuffer(0));
       this.read = this.write = 0;
       return this;
     };
-    util2.DataBuffer.prototype.truncate = function(count) {
+    util.DataBuffer.prototype.truncate = function(count) {
       this.write = Math.max(0, this.length() - count);
       this.read = Math.min(this.read, this.write);
       return this;
     };
-    util2.DataBuffer.prototype.toHex = function() {
+    util.DataBuffer.prototype.toHex = function() {
       var rval = "";
       for (var i = this.read; i < this.data.byteLength; ++i) {
         var b = this.data.getUint8(i);
@@ -13188,34 +13188,34 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.DataBuffer.prototype.toString = function(encoding) {
+    util.DataBuffer.prototype.toString = function(encoding) {
       var view = new Uint8Array(this.data, this.read, this.length());
       encoding = encoding || "utf8";
       if (encoding === "binary" || encoding === "raw") {
-        return util2.binary.raw.encode(view);
+        return util.binary.raw.encode(view);
       }
       if (encoding === "hex") {
-        return util2.binary.hex.encode(view);
+        return util.binary.hex.encode(view);
       }
       if (encoding === "base64") {
-        return util2.binary.base64.encode(view);
+        return util.binary.base64.encode(view);
       }
       if (encoding === "utf8") {
-        return util2.text.utf8.decode(view);
+        return util.text.utf8.decode(view);
       }
       if (encoding === "utf16") {
-        return util2.text.utf16.decode(view);
+        return util.text.utf16.decode(view);
       }
       throw new Error("Invalid encoding: " + encoding);
     };
-    util2.createBuffer = function(input, encoding) {
+    util.createBuffer = function(input, encoding) {
       encoding = encoding || "raw";
       if (input !== void 0 && encoding === "utf8") {
-        input = util2.encodeUtf8(input);
+        input = util.encodeUtf8(input);
       }
-      return new util2.ByteBuffer(input);
+      return new util.ByteBuffer(input);
     };
-    util2.fillString = function(c, n) {
+    util.fillString = function(c, n) {
       var s = "";
       while (n > 0) {
         if (n & 1) {
@@ -13228,7 +13228,7 @@ var require_util = __commonJS({
       }
       return s;
     };
-    util2.xorBytes = function(s1, s2, n) {
+    util.xorBytes = function(s1, s2, n) {
       var s3 = "";
       var b = "";
       var t = "";
@@ -13247,7 +13247,7 @@ var require_util = __commonJS({
       s3 += t;
       return s3;
     };
-    util2.hexToBytes = function(hex) {
+    util.hexToBytes = function(hex) {
       var rval = "";
       var i = 0;
       if (hex.length & true) {
@@ -13259,10 +13259,10 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.bytesToHex = function(bytes) {
-      return util2.createBuffer(bytes).toHex();
+    util.bytesToHex = function(bytes) {
+      return util.createBuffer(bytes).toHex();
     };
-    util2.int32ToBytes = function(i) {
+    util.int32ToBytes = function(i) {
       return String.fromCharCode(i >> 24 & 255) + String.fromCharCode(i >> 16 & 255) + String.fromCharCode(i >> 8 & 255) + String.fromCharCode(i & 255);
     };
     var _base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
@@ -13349,7 +13349,7 @@ var require_util = __commonJS({
       51
     ];
     var _base58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    util2.encode64 = function(input, maxline) {
+    util.encode64 = function(input, maxline) {
       var line = "";
       var output = "";
       var chr1, chr2, chr3;
@@ -13374,7 +13374,7 @@ var require_util = __commonJS({
       output += line;
       return output;
     };
-    util2.decode64 = function(input) {
+    util.decode64 = function(input) {
       input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
       var output = "";
       var enc1, enc2, enc3, enc4;
@@ -13394,13 +13394,13 @@ var require_util = __commonJS({
       }
       return output;
     };
-    util2.encodeUtf8 = function(str) {
+    util.encodeUtf8 = function(str) {
       return unescape(encodeURIComponent(str));
     };
-    util2.decodeUtf8 = function(str) {
+    util.decodeUtf8 = function(str) {
       return decodeURIComponent(escape(str));
     };
-    util2.binary = {
+    util.binary = {
       raw: {},
       hex: {},
       base64: {},
@@ -13410,10 +13410,10 @@ var require_util = __commonJS({
         decode: baseN.decode
       }
     };
-    util2.binary.raw.encode = function(bytes) {
+    util.binary.raw.encode = function(bytes) {
       return String.fromCharCode.apply(null, bytes);
     };
-    util2.binary.raw.decode = function(str, output, offset) {
+    util.binary.raw.decode = function(str, output, offset) {
       var out = output;
       if (!out) {
         out = new Uint8Array(str.length);
@@ -13425,8 +13425,8 @@ var require_util = __commonJS({
       }
       return output ? j - offset : out;
     };
-    util2.binary.hex.encode = util2.bytesToHex;
-    util2.binary.hex.decode = function(hex, output, offset) {
+    util.binary.hex.encode = util.bytesToHex;
+    util.binary.hex.decode = function(hex, output, offset) {
       var out = output;
       if (!out) {
         out = new Uint8Array(Math.ceil(hex.length / 2));
@@ -13442,7 +13442,7 @@ var require_util = __commonJS({
       }
       return output ? j - offset : out;
     };
-    util2.binary.base64.encode = function(input, maxline) {
+    util.binary.base64.encode = function(input, maxline) {
       var line = "";
       var output = "";
       var chr1, chr2, chr3;
@@ -13467,7 +13467,7 @@ var require_util = __commonJS({
       output += line;
       return output;
     };
-    util2.binary.base64.decode = function(input, output, offset) {
+    util.binary.base64.decode = function(input, output, offset) {
       var out = output;
       if (!out) {
         out = new Uint8Array(Math.ceil(input.length / 4) * 3);
@@ -13491,18 +13491,18 @@ var require_util = __commonJS({
       }
       return output ? j - offset : out.subarray(0, j);
     };
-    util2.binary.base58.encode = function(input, maxline) {
-      return util2.binary.baseN.encode(input, _base58, maxline);
+    util.binary.base58.encode = function(input, maxline) {
+      return util.binary.baseN.encode(input, _base58, maxline);
     };
-    util2.binary.base58.decode = function(input, maxline) {
-      return util2.binary.baseN.decode(input, _base58, maxline);
+    util.binary.base58.decode = function(input, maxline) {
+      return util.binary.baseN.decode(input, _base58, maxline);
     };
-    util2.text = {
+    util.text = {
       utf8: {},
       utf16: {}
     };
-    util2.text.utf8.encode = function(str, output, offset) {
-      str = util2.encodeUtf8(str);
+    util.text.utf8.encode = function(str, output, offset) {
+      str = util.encodeUtf8(str);
       var out = output;
       if (!out) {
         out = new Uint8Array(str.length);
@@ -13514,10 +13514,10 @@ var require_util = __commonJS({
       }
       return output ? j - offset : out;
     };
-    util2.text.utf8.decode = function(bytes) {
-      return util2.decodeUtf8(String.fromCharCode.apply(null, bytes));
+    util.text.utf8.decode = function(bytes) {
+      return util.decodeUtf8(String.fromCharCode.apply(null, bytes));
     };
-    util2.text.utf16.encode = function(str, output, offset) {
+    util.text.utf16.encode = function(str, output, offset) {
       var out = output;
       if (!out) {
         out = new Uint8Array(str.length * 2);
@@ -13532,11 +13532,11 @@ var require_util = __commonJS({
       }
       return output ? j - offset : out;
     };
-    util2.text.utf16.decode = function(bytes) {
+    util.text.utf16.decode = function(bytes) {
       return String.fromCharCode.apply(null, new Uint16Array(bytes.buffer));
     };
-    util2.deflate = function(api, bytes, raw) {
-      bytes = util2.decode64(api.deflate(util2.encode64(bytes)).rval);
+    util.deflate = function(api, bytes, raw) {
+      bytes = util.decode64(api.deflate(util.encode64(bytes)).rval);
       if (raw) {
         var start = 2;
         var flg = bytes.charCodeAt(1);
@@ -13547,9 +13547,9 @@ var require_util = __commonJS({
       }
       return bytes;
     };
-    util2.inflate = function(api, bytes, raw) {
-      var rval = api.inflate(util2.encode64(bytes)).rval;
-      return rval === null ? null : util2.decode64(rval);
+    util.inflate = function(api, bytes, raw) {
+      var rval = api.inflate(util.encode64(bytes)).rval;
+      return rval === null ? null : util.decode64(rval);
     };
     var _setStorageObject = function(api, id, obj) {
       if (!api) {
@@ -13559,7 +13559,7 @@ var require_util = __commonJS({
       if (obj === null) {
         rval = api.removeItem(id);
       } else {
-        obj = util2.encode64(JSON.stringify(obj));
+        obj = util.encode64(JSON.stringify(obj));
         rval = api.setItem(id, obj);
       }
       if (typeof rval !== "undefined" && rval.rval !== true) {
@@ -13588,7 +13588,7 @@ var require_util = __commonJS({
         }
       }
       if (rval !== null) {
-        rval = JSON.parse(util2.decode64(rval));
+        rval = JSON.parse(util.decode64(rval));
       }
       return rval;
     };
@@ -13660,19 +13660,19 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.setItem = function(api, id, key, data, location) {
+    util.setItem = function(api, id, key, data, location) {
       _callStorageFunction(_setItem, arguments, location);
     };
-    util2.getItem = function(api, id, key, location) {
+    util.getItem = function(api, id, key, location) {
       return _callStorageFunction(_getItem, arguments, location);
     };
-    util2.removeItem = function(api, id, key, location) {
+    util.removeItem = function(api, id, key, location) {
       _callStorageFunction(_removeItem, arguments, location);
     };
-    util2.clearItems = function(api, id, location) {
+    util.clearItems = function(api, id, location) {
       _callStorageFunction(_clearItems, arguments, location);
     };
-    util2.parseUrl = function(str) {
+    util.parseUrl = function(str) {
       var regex = /^(https?):\/\/([^:&^\/]*):?(\d*)(.*)$/g;
       regex.lastIndex = 0;
       var m = regex.exec(str);
@@ -13701,7 +13701,7 @@ var require_util = __commonJS({
       return url;
     };
     var _queryVariables = null;
-    util2.getQueryVariables = function(query) {
+    util.getQueryVariables = function(query) {
       var parse = function(q) {
         var rval2 = {};
         var kvpairs = q.split("&");
@@ -13740,7 +13740,7 @@ var require_util = __commonJS({
       }
       return rval;
     };
-    util2.parseFragment = function(fragment) {
+    util.parseFragment = function(fragment) {
       var fp = fragment;
       var fq = "";
       var pos = fragment.indexOf("?");
@@ -13752,7 +13752,7 @@ var require_util = __commonJS({
       if (path.length > 0 && path[0] === "") {
         path.shift();
       }
-      var query = fq === "" ? {} : util2.getQueryVariables(fq);
+      var query = fq === "" ? {} : util.getQueryVariables(fq);
       return {
         pathString: fp,
         queryString: fq,
@@ -13760,8 +13760,8 @@ var require_util = __commonJS({
         query
       };
     };
-    util2.makeRequest = function(reqString) {
-      var frag = util2.parseFragment(reqString);
+    util.makeRequest = function(reqString) {
+      var frag = util.parseFragment(reqString);
       var req = {
         path: frag.pathString,
         query: frag.queryString,
@@ -13793,13 +13793,13 @@ var require_util = __commonJS({
       };
       return req;
     };
-    util2.makeLink = function(path, query, fragment) {
+    util.makeLink = function(path, query, fragment) {
       path = jQuery.isArray(path) ? path.join("/") : path;
       var qstr = jQuery.param(query || {});
       fragment = fragment || "";
       return path + (qstr.length > 0 ? "?" + qstr : "") + (fragment.length > 0 ? "#" + fragment : "");
     };
-    util2.isEmpty = function(obj) {
+    util.isEmpty = function(obj) {
       for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
           return false;
@@ -13807,7 +13807,7 @@ var require_util = __commonJS({
       }
       return true;
     };
-    util2.format = function(format) {
+    util.format = function(format) {
       var re = /%./g;
       var match;
       var part;
@@ -13840,7 +13840,7 @@ var require_util = __commonJS({
       parts.push(format.substring(last));
       return parts.join("");
     };
-    util2.formatNumber = function(number, decimals, dec_point, thousands_sep) {
+    util.formatNumber = function(number, decimals, dec_point, thousands_sep) {
       var n = number, c = isNaN(decimals = Math.abs(decimals)) ? 2 : decimals;
       var d = dec_point === void 0 ? "," : dec_point;
       var t = thousands_sep === void 0 ? "." : thousands_sep, s = n < 0 ? "-" : "";
@@ -13848,33 +13848,33 @@ var require_util = __commonJS({
       var j = i.length > 3 ? i.length % 3 : 0;
       return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
     };
-    util2.formatSize = function(size) {
+    util.formatSize = function(size) {
       if (size >= 1073741824) {
-        size = util2.formatNumber(size / 1073741824, 2, ".", "") + " GiB";
+        size = util.formatNumber(size / 1073741824, 2, ".", "") + " GiB";
       } else if (size >= 1048576) {
-        size = util2.formatNumber(size / 1048576, 2, ".", "") + " MiB";
+        size = util.formatNumber(size / 1048576, 2, ".", "") + " MiB";
       } else if (size >= 1024) {
-        size = util2.formatNumber(size / 1024, 0) + " KiB";
+        size = util.formatNumber(size / 1024, 0) + " KiB";
       } else {
-        size = util2.formatNumber(size, 0) + " bytes";
+        size = util.formatNumber(size, 0) + " bytes";
       }
       return size;
     };
-    util2.bytesFromIP = function(ip) {
+    util.bytesFromIP = function(ip) {
       if (ip.indexOf(".") !== -1) {
-        return util2.bytesFromIPv4(ip);
+        return util.bytesFromIPv4(ip);
       }
       if (ip.indexOf(":") !== -1) {
-        return util2.bytesFromIPv6(ip);
+        return util.bytesFromIPv6(ip);
       }
       return null;
     };
-    util2.bytesFromIPv4 = function(ip) {
+    util.bytesFromIPv4 = function(ip) {
       ip = ip.split(".");
       if (ip.length !== 4) {
         return null;
       }
-      var b = util2.createBuffer();
+      var b = util.createBuffer();
       for (var i = 0; i < ip.length; ++i) {
         var num = parseInt(ip[i], 10);
         if (isNaN(num)) {
@@ -13884,7 +13884,7 @@ var require_util = __commonJS({
       }
       return b.getBytes();
     };
-    util2.bytesFromIPv6 = function(ip) {
+    util.bytesFromIPv6 = function(ip) {
       var blanks = 0;
       ip = ip.split(":").filter(function(e) {
         if (e.length === 0)
@@ -13892,14 +13892,14 @@ var require_util = __commonJS({
         return true;
       });
       var zeros = (8 - ip.length + blanks) * 2;
-      var b = util2.createBuffer();
+      var b = util.createBuffer();
       for (var i = 0; i < 8; ++i) {
         if (!ip[i] || ip[i].length === 0) {
           b.fillWithByte(0, zeros);
           zeros = 0;
           continue;
         }
-        var bytes = util2.hexToBytes(ip[i]);
+        var bytes = util.hexToBytes(ip[i]);
         if (bytes.length < 2) {
           b.putByte(0);
         }
@@ -13907,16 +13907,16 @@ var require_util = __commonJS({
       }
       return b.getBytes();
     };
-    util2.bytesToIP = function(bytes) {
+    util.bytesToIP = function(bytes) {
       if (bytes.length === 4) {
-        return util2.bytesToIPv4(bytes);
+        return util.bytesToIPv4(bytes);
       }
       if (bytes.length === 16) {
-        return util2.bytesToIPv6(bytes);
+        return util.bytesToIPv6(bytes);
       }
       return null;
     };
-    util2.bytesToIPv4 = function(bytes) {
+    util.bytesToIPv4 = function(bytes) {
       if (bytes.length !== 4) {
         return null;
       }
@@ -13926,7 +13926,7 @@ var require_util = __commonJS({
       }
       return ip.join(".");
     };
-    util2.bytesToIPv6 = function(bytes) {
+    util.bytesToIPv6 = function(bytes) {
       if (bytes.length !== 16) {
         return null;
       }
@@ -13934,7 +13934,7 @@ var require_util = __commonJS({
       var zeroGroups = [];
       var zeroMaxGroup = 0;
       for (var i = 0; i < bytes.length; i += 2) {
-        var hex = util2.bytesToHex(bytes[i] + bytes[i + 1]);
+        var hex = util.bytesToHex(bytes[i] + bytes[i + 1]);
         while (hex[0] === "0" && hex !== "0") {
           hex = hex.substr(1);
         }
@@ -13966,26 +13966,26 @@ var require_util = __commonJS({
       }
       return ip.join(":");
     };
-    util2.estimateCores = function(options, callback) {
+    util.estimateCores = function(options, callback) {
       if (typeof options === "function") {
         callback = options;
         options = {};
       }
       options = options || {};
-      if ("cores" in util2 && !options.update) {
-        return callback(null, util2.cores);
+      if ("cores" in util && !options.update) {
+        return callback(null, util.cores);
       }
       if (typeof navigator !== "undefined" && "hardwareConcurrency" in navigator && navigator.hardwareConcurrency > 0) {
-        util2.cores = navigator.hardwareConcurrency;
-        return callback(null, util2.cores);
+        util.cores = navigator.hardwareConcurrency;
+        return callback(null, util.cores);
       }
       if (typeof Worker === "undefined") {
-        util2.cores = 1;
-        return callback(null, util2.cores);
+        util.cores = 1;
+        return callback(null, util.cores);
       }
       if (typeof Blob === "undefined") {
-        util2.cores = 2;
-        return callback(null, util2.cores);
+        util.cores = 2;
+        return callback(null, util.cores);
       }
       var blobUrl = URL.createObjectURL(new Blob([
         "(",
@@ -14006,9 +14006,9 @@ var require_util = __commonJS({
           var avg = Math.floor(max.reduce(function(avg2, x) {
             return avg2 + x;
           }, 0) / max.length);
-          util2.cores = Math.max(1, avg);
+          util.cores = Math.max(1, avg);
           URL.revokeObjectURL(blobUrl);
-          return callback(null, util2.cores);
+          return callback(null, util.cores);
         }
         map(numWorkers, function(err, results) {
           max.push(reduce(numWorkers, results));
@@ -19701,7 +19701,7 @@ var require_rsa = __commonJS({
     var BigInteger;
     var _crypto = forge.util.isNodejs ? require("crypto") : null;
     var asn1 = forge.asn1;
-    var util2 = forge.util;
+    var util = forge.util;
     forge.pki = forge.pki || {};
     module2.exports = forge.pki.rsa = forge.rsa = forge.rsa || {};
     var pki = forge.pki;
@@ -20143,13 +20143,13 @@ var require_rsa = __commonJS({
             });
           }
           if (_detectSubtleCrypto("generateKey") && _detectSubtleCrypto("exportKey")) {
-            return util2.globalScope.crypto.subtle.generateKey({
+            return util.globalScope.crypto.subtle.generateKey({
               name: "RSASSA-PKCS1-v1_5",
               modulusLength: bits,
               publicExponent: _intToUint8Array(e),
               hash: { name: "SHA-256" }
             }, true, ["sign", "verify"]).then(function(pair) {
-              return util2.globalScope.crypto.subtle.exportKey("pkcs8", pair.privateKey);
+              return util.globalScope.crypto.subtle.exportKey("pkcs8", pair.privateKey);
             }).then(void 0, function(err) {
               callback(err);
             }).then(function(pkcs8) {
@@ -20163,7 +20163,7 @@ var require_rsa = __commonJS({
             });
           }
           if (_detectSubtleMsCrypto("generateKey") && _detectSubtleMsCrypto("exportKey")) {
-            var genOp = util2.globalScope.msCrypto.subtle.generateKey({
+            var genOp = util.globalScope.msCrypto.subtle.generateKey({
               name: "RSASSA-PKCS1-v1_5",
               modulusLength: bits,
               publicExponent: _intToUint8Array(e),
@@ -20171,7 +20171,7 @@ var require_rsa = __commonJS({
             }, true, ["sign", "verify"]);
             genOp.oncomplete = function(e2) {
               var pair = e2.target.result;
-              var exportOp = util2.globalScope.msCrypto.subtle.exportKey("pkcs8", pair.privateKey);
+              var exportOp = util.globalScope.msCrypto.subtle.exportKey("pkcs8", pair.privateKey);
               exportOp.oncomplete = function(e3) {
                 var pkcs8 = e3.target.result;
                 var privateKey = pki.privateKeyFromAsn1(asn1.fromDer(forge.util.createBuffer(pkcs8)));
@@ -20612,10 +20612,10 @@ var require_rsa = __commonJS({
       return forge.util.isNodejs && typeof _crypto[fn] === "function";
     }
     function _detectSubtleCrypto(fn) {
-      return typeof util2.globalScope !== "undefined" && typeof util2.globalScope.crypto === "object" && typeof util2.globalScope.crypto.subtle === "object" && typeof util2.globalScope.crypto.subtle[fn] === "function";
+      return typeof util.globalScope !== "undefined" && typeof util.globalScope.crypto === "object" && typeof util.globalScope.crypto.subtle === "object" && typeof util.globalScope.crypto.subtle[fn] === "function";
     }
     function _detectSubtleMsCrypto(fn) {
-      return typeof util2.globalScope !== "undefined" && typeof util2.globalScope.msCrypto === "object" && typeof util2.globalScope.msCrypto.subtle === "object" && typeof util2.globalScope.msCrypto.subtle[fn] === "function";
+      return typeof util.globalScope !== "undefined" && typeof util.globalScope.msCrypto === "object" && typeof util.globalScope.msCrypto.subtle === "object" && typeof util.globalScope.msCrypto.subtle[fn] === "function";
     }
     function _intToUint8Array(x) {
       var bytes = forge.util.hexToBytes(x.toString(16));
@@ -33959,14 +33959,14 @@ var require_inherits_browser = __commonJS({
 var require_inherits = __commonJS({
   "node_modules/inherits/inherits.js"(exports2, module2) {
     try {
-      util2 = require("util");
-      if (typeof util2.inherits !== "function")
+      util = require("util");
+      if (typeof util.inherits !== "function")
         throw "";
-      module2.exports = util2.inherits;
+      module2.exports = util.inherits;
     } catch (e) {
       module2.exports = require_inherits_browser();
     }
-    var util2;
+    var util;
   }
 });
 
@@ -36794,8 +36794,8 @@ var require_util2 = __commonJS({
       noop() {
       }
       handleResp(err, resp, body, callback) {
-        callback = callback || util2.noop;
-        const parsedResp = extend(true, { err: err || null }, resp && util2.parseHttpRespMessage(resp), body && util2.parseHttpRespBody(body));
+        callback = callback || util.noop;
+        const parsedResp = extend(true, { err: err || null }, resp && util.parseHttpRespMessage(resp), body && util.parseHttpRespBody(body));
         if (!parsedResp.err && resp && typeof parsedResp.body === "object") {
           parsedResp.resp.body = parsedResp.body;
         }
@@ -36835,7 +36835,7 @@ var require_util2 = __commonJS({
         return parsedHttpRespBody;
       }
       makeWritableStream(dup, options, onComplete) {
-        onComplete = onComplete || util2.noop;
+        onComplete = onComplete || util.noop;
         const writeStream = new ProgressStream();
         writeStream.on("progress", (evt) => dup.emit("progress", evt));
         dup.setWritable(writeStream);
@@ -36868,7 +36868,7 @@ var require_util2 = __commonJS({
             }
             const request = teeny_request_1.teenyRequest.defaults(requestDefaults);
             request(authenticatedReqOpts, (err2, resp, body) => {
-              util2.handleResp(err2, resp, body, (err3, data) => {
+              util.handleResp(err2, resp, body, (err3, data) => {
                 if (err3) {
                   dup.destroy(err3);
                   return;
@@ -36927,7 +36927,7 @@ var require_util2 = __commonJS({
             }
             if (!err || autoAuthFailed) {
               try {
-                authenticatedReqOpts = util2.decorateRequest(authenticatedReqOpts, projectId);
+                authenticatedReqOpts = util.decorateRequest(authenticatedReqOpts, projectId);
                 err = null;
               } catch (e) {
                 err = err || e;
@@ -36945,7 +36945,7 @@ var require_util2 = __commonJS({
             if (options && options.onAuthenticated) {
               options.onAuthenticated(null, authenticatedReqOpts);
             } else {
-              activeRequest_ = util2.makeRequest(authenticatedReqOpts, reqConfig, (apiResponseError, ...params) => {
+              activeRequest_ = util.makeRequest(authenticatedReqOpts, reqConfig, (apiResponseError, ...params) => {
                 if (apiResponseError && apiResponseError.code === 401 && authLibraryError) {
                   apiResponseError = authLibraryError;
                 }
@@ -37003,11 +37003,11 @@ var require_util2 = __commonJS({
           noResponseRetries: autoRetryValue !== false ? maxRetryValue : 0,
           shouldRetryFn(httpRespMessage) {
             var _a2, _b2;
-            const err = util2.parseHttpRespMessage(httpRespMessage).err;
+            const err = util.parseHttpRespMessage(httpRespMessage).err;
             if ((_a2 = config2.retryOptions) === null || _a2 === void 0 ? void 0 : _a2.retryableErrorFn) {
               return err && ((_b2 = config2.retryOptions) === null || _b2 === void 0 ? void 0 : _b2.retryableErrorFn(err));
             }
-            return err && util2.shouldRetryRequest(err);
+            return err && util.shouldRetryRequest(err);
           },
           maxRetryDelay: (_e = config2.retryOptions) === null || _e === void 0 ? void 0 : _e.maxRetryDelay,
           retryDelayMultiplier: (_f = config2.retryOptions) === null || _f === void 0 ? void 0 : _f.retryDelayMultiplier,
@@ -37018,7 +37018,7 @@ var require_util2 = __commonJS({
         }
         if (!config2.stream) {
           return retryRequest(reqOpts, options, (err, response, body) => {
-            util2.handleResp(err, response, body, callback);
+            util.handleResp(err, response, body, callback);
           });
         }
         const dup = config2.stream;
@@ -37099,8 +37099,8 @@ var require_util2 = __commonJS({
         callback();
       }
     };
-    var util2 = new Util();
-    exports2.util = util2;
+    var util = new Util();
+    exports2.util = util;
   }
 });
 
@@ -46590,14 +46590,14 @@ var vscode3 = require("vscode");
 var bigquery2 = (init_bigquery(), bigquery_exports);
 var fs = require("fs");
 var yaml = require_yaml();
-var util = require("util");
-var exec = util.promisify(require("child_process").exec);
 var config;
 var configPrefix = "dbt-bigquery-preview";
-var workspacePath = vscode3.workspace.workspaceFolders[0].uri.path;
+var wpFolders = vscode3.workspace.workspaceFolders;
+var workspacePath = wpFolders[0].uri.path;
 var file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, "utf-8");
 var parsedFile = yaml.parse(file);
 var projectName = parsedFile.name;
+var fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
 function readConfig() {
   try {
     config = vscode3.workspace.getConfiguration(configPrefix);
@@ -46625,12 +46625,21 @@ function activate(context) {
       const fileName = getFileName(filePath);
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
-      console.log(`${terminal.exitStatus.code}`);
-      yield terminalResponse(terminal);
-      vscode3.window.showInformationMessage("We awaited!");
-      yield new Promise((resolve) => setTimeout(resolve, 25e3));
-      console.log(`${terminal.exitStatus.code}`);
-      terminal.dispose();
+      console.log("We compiled the file!");
+      fileWatcher.onDidChange((uri) => __async(this, null, function* () {
+        console.log("we detected the file changed!");
+        console.log(`${uri.toString()}`);
+        console.log(`${filePath}`);
+        if (uri.toString().includes(filePath)) {
+          console.log("the uri contains the file!");
+          const compiledQuery = getCompiledQuery(filePath);
+          console.log(`${compiledQuery}`);
+          const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
+          console.log("We ran the query!");
+          const data = queryResult[0][0].name;
+          vscode3.window.showInformationMessage(`${data}`);
+        }
+      }));
     } catch (e) {
       vscode3.window.showErrorMessage(e);
     }
@@ -46646,16 +46655,11 @@ function getFileName(filePath) {
     return fileName;
   }
 }
-function terminalResponse(terminal) {
-  return __async(this, null, function* () {
-    let counter = 1;
-    while (terminal.exitStatus.code !== 0) {
-      console.log(`${terminal.exitStatus.code}`);
-      console.log(`waiting...${counter}`);
-      counter++;
-      yield new Promise((resolve) => setTimeout(resolve, 250));
-    }
-  });
+function getCompiledQuery(filePath) {
+  const filePathSplitted = filePath.split("/models/");
+  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
+  const compiledQuery = fs.readFileSync(compiledFilePath, "utf-8");
+  return compiledQuery;
 }
 function selectTerminal() {
   let terminalExists = false;
@@ -46682,6 +46686,7 @@ function selectTerminal() {
   }
 }
 function deactivate() {
+  fileWatcher.dispose();
 }
 module.exports = {
   activate,
