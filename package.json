@@ -10,15 +10,15 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:dbt-bigquery-preview.runQuery",
+		"onCommand:dbt-bigquery-preview.preview",
 		"workspaceContains:**/dbt_project.yml"
 	],
 	"main": "./out/main.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "dbt-bigquery-preview.runQuery",
-				"title": "dbt-bigquery-preview: Run Query"
+				"command": "dbt-bigquery-preview.preview",
+				"title": "Preview dbt results"
 			}
 		],
 		"configuration": {

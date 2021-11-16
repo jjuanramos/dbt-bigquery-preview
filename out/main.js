@@ -46592,21 +46592,11 @@ var fs = require("fs");
 var yaml = require_yaml();
 var config;
 var configPrefix = "dbt-bigquery-preview";
-var wpFolders = vscode3.workspace.workspaceFolders;
-var workspacePath = wpFolders[0].uri.path;
-var file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, "utf-8");
-var parsedFile = yaml.parse(file);
-var projectName = parsedFile.name;
-var fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
-function readConfig() {
-  try {
-    config = vscode3.workspace.getConfiguration(configPrefix);
-  } catch (e) {
-    vscode3.window.showErrorMessage(`failed to read config: ${e}`);
-  }
-}
+var workspacePath = vscode3.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
+  const fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
+  const dbtProjectName = getDbtProjectName(workspacePath);
   const editor = vscode3.window.activeTextEditor;
   if (!editor) {
     return;
@@ -46619,18 +46609,15 @@ function activate(context) {
     readConfig();
     bigQueryRunner.setConfig(config);
   }));
-  const disposable = vscode3.commands.registerCommand("dbt-bigquery-preview.runQuery", () => __async(this, null, function* () {
+  const disposable = vscode3.commands.registerCommand("dbt-bigquery-preview.preview", () => __async(this, null, function* () {
     try {
       const filePath = vscode3.window.activeTextEditor.document.fileName;
       const fileName = getFileName(filePath);
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
-      console.log("We compiled the file!");
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        console.log("we detected the file changed!");
-        const compiledFilePath = getCompiledPath(filePath);
+        const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
         if (uri.toString().includes(compiledFilePath)) {
-          console.log("the uri contains the compiled file path!");
           const compiledQuery = getCompiledQuery(compiledFilePath);
           const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
           const data = queryResult[0][0].name;
@@ -46638,10 +46625,8 @@ function activate(context) {
         }
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        console.log("we detected the file was created!");
-        const compiledFilePath = getCompiledPath(filePath);
+        const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
         if (uri.toString().includes(compiledFilePath)) {
-          console.log("the uri contains the compiled file path!");
           const compiledQuery = getCompiledQuery(compiledFilePath);
           const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
           const data = queryResult[0][0].name;
@@ -46654,6 +46639,23 @@ function activate(context) {
   }));
   context.subscriptions.push(disposable);
 }
+function readConfig() {
+  try {
+    config = vscode3.workspace.getConfiguration(configPrefix);
+  } catch (e) {
+    vscode3.window.showErrorMessage(`failed to read config: ${e}`);
+  }
+}
+function getDbtProjectName(workspacePath2) {
+  try {
+    const file = fs.readFileSync(`${workspacePath2}/dbt_project.yml`, "utf-8");
+    const parsedFile = yaml.parse(file);
+    const dbtProjectName = parsedFile.name;
+    return dbtProjectName;
+  } catch (e) {
+    vscode3.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
+  }
+}
 function getFileName(filePath) {
   const lastIndex = filePath.lastIndexOf("/");
   if (lastIndex === -1) {
@@ -46663,9 +46665,9 @@ function getFileName(filePath) {
     return fileName;
   }
 }
-function getCompiledPath(filePath) {
+function getCompiledPath(filePath, dbtProjectName) {
   const filePathSplitted = filePath.split("/models/");
-  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
+  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName}/models/${filePathSplitted[1]}`;
   return compiledFilePath;
 }
 function getCompiledQuery(compiledFilePath) {
@@ -46697,7 +46699,6 @@ function selectTerminal() {
   }
 }
 function deactivate() {
-  fileWatcher.dispose();
 }
 module.exports = {
   activate,

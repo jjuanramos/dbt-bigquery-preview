@@ -6,20 +6,14 @@ const yaml = require('yaml');
 
 let config;
 const configPrefix = 'dbt-bigquery-preview';
-
-// assumes the extension is opened in the dbt directory -> Document it
-const wpFolders = vscode.workspace.workspaceFolders;
-const workspacePath = wpFolders[0].uri.path;
-const file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, 'utf-8');
-const parsedFile = yaml.parse(file);
-const projectName = parsedFile.name;
-
-const fileWatcher = vscode.workspace.createFileSystemWatcher(
-	new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
-);
+const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
 function activate(context) {
 	readConfig();
+	const fileWatcher = vscode.workspace.createFileSystemWatcher(
+		new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
+	);
+	const dbtProjectName = getDbtProjectName(workspacePath);
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
 		return;
@@ -38,7 +32,7 @@ function activate(context) {
 		})
 	);
 
-	const disposable = vscode.commands.registerCommand('dbt-bigquery-preview.runQuery', async () => {
+	const disposable = vscode.commands.registerCommand('dbt-bigquery-preview.preview', async () => {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
 			const fileName = getFileName(filePath);
@@ -46,7 +40,7 @@ function activate(context) {
 			terminal.sendText(`dbt compile -s ${fileName}`);
 
 			fileWatcher.onDidChange(async (uri) => {
-				const compiledFilePath = getCompiledPath(filePath);
+				const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
 				if (uri.toString().includes(compiledFilePath)) {
 					const compiledQuery = getCompiledQuery(compiledFilePath);
 					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
@@ -56,7 +50,7 @@ function activate(context) {
 			});
 
 			fileWatcher.onDidCreate(async (uri) => {
-				const compiledFilePath = getCompiledPath(filePath);
+				const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
 				if (uri.toString().includes(compiledFilePath)) {
 					const compiledQuery = getCompiledQuery(compiledFilePath);
 					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
@@ -81,6 +75,19 @@ function readConfig() {
 	}
 }
 
+function getDbtProjectName(workspacePath) {
+	try {
+		const file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, 'utf-8');
+		// assumes the extension is opened in the dbt directory -> Document it
+		const parsedFile = yaml.parse(file);
+		const dbtProjectName = parsedFile.name;
+		return dbtProjectName;
+	} catch(e) {
+		vscode.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
+	}
+}
+
+
 function getFileName(filePath) {
 	const lastIndex = filePath.lastIndexOf('/');
 	if (lastIndex === -1) {
@@ -91,9 +98,9 @@ function getFileName(filePath) {
 	}
 }
 
-function getCompiledPath(filePath) {
+function getCompiledPath(filePath, dbtProjectName) {
     const filePathSplitted = filePath.split('/models/');
-    const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
+    const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName}/models/${filePathSplitted[1]}`;
 	return compiledFilePath;
 }
 
@@ -128,7 +135,6 @@ function selectTerminal() {
 }
 
 function deactivate() {
-	fileWatcher.dispose();
 }
 
 module.exports = {
@@ -139,4 +145,4 @@ module.exports = {
 // to do
 // show result in different window
 // utils
-// https://github.dev/looker-open-source/malloy/packages/malloy-db-bigquery/src/bigquery_connection.ts
+// https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts
