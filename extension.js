@@ -18,14 +18,6 @@ const fileWatcher = vscode.workspace.createFileSystemWatcher(
 	new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
 );
 
-function readConfig() {
-	try {
-		config = vscode.workspace.getConfiguration(configPrefix);
-	} catch (e) {
-		vscode.window.showErrorMessage(`failed to read config: ${e}`);
-	}
-}
-
 function activate(context) {
 	readConfig();
 	const editor = vscode.window.activeTextEditor;
@@ -52,30 +44,41 @@ function activate(context) {
 			const fileName = getFileName(filePath);
 			const terminal = selectTerminal();
 			terminal.sendText(`dbt compile -s ${fileName}`);
-			console.log("We compiled the file!");
+
 			fileWatcher.onDidChange(async (uri) => {
-				console.log("we detected the file changed!");
-				console.log(`${uri.toString()}`);
-				console.log(`${filePath}`);
-				// file path is different, we need compiled file path
-				// divided getCompiledQuery in getCompiledPath and getCompiledQuery,
-				// then check if uri includes compiledPath
-				if (uri.toString().includes(filePath)) {
-					console.log("the uri contains the file!");
-					const compiledQuery = getCompiledQuery(filePath);
-					console.log(`${compiledQuery}`);
+				const compiledFilePath = getCompiledPath(filePath);
+				if (uri.toString().includes(compiledFilePath)) {
+					const compiledQuery = getCompiledQuery(compiledFilePath);
 					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
-					console.log("We ran the query!");
 					const data = queryResult[0][0].name;
 					vscode.window.showInformationMessage(`${data}`);
 				}
 			});
+
+			fileWatcher.onDidCreate(async (uri) => {
+				const compiledFilePath = getCompiledPath(filePath);
+				if (uri.toString().includes(compiledFilePath)) {
+					const compiledQuery = getCompiledQuery(compiledFilePath);
+					const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
+					const data = queryResult[0][0].name;
+					vscode.window.showInformationMessage(`${data}`);
+				}
+			});
+
 		} catch(e) {
 			vscode.window.showErrorMessage(e);
 		}
 	});
 
 	context.subscriptions.push(disposable);
+}
+
+function readConfig() {
+	try {
+		config = vscode.workspace.getConfiguration(configPrefix);
+	} catch (e) {
+		vscode.window.showErrorMessage(`failed to read config: ${e}`);
+	}
 }
 
 function getFileName(filePath) {
@@ -88,9 +91,13 @@ function getFileName(filePath) {
 	}
 }
 
-function getCompiledQuery(filePath) {
+function getCompiledPath(filePath) {
     const filePathSplitted = filePath.split('/models/');
     const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
+	return compiledFilePath;
+}
+
+function getCompiledQuery(compiledFilePath) {
     const compiledQuery = fs.readFileSync(compiledFilePath, 'utf-8');
 	return compiledQuery;
 }
@@ -130,20 +137,6 @@ module.exports = {
 }
 
 // to do
-// /home/juan/coding/learn/dbt/dbt-northwind-analytics/models/staging/stg_customers.sql to
-// /home/juan/coding/learn/dbt/dbt-northwind-analytics/target/compiled/northwind/models/staging/stg_customers.sql
-	// 1.1 get full path
-	// detect where /models start
-	// add /target/compiled/$dbt_project.name before the /models
-// 2. manage to do dbt compile of the model, show it in the cmd
-// Check how to get current workspace, so we can run dbt in the workspace where vscode is opened
-// 3. glue 1 & 2 together
-
+// show result in different window
 // utils
-// https://github.dev/dbt-labs/dbt-bigquery/dbt/adapters/bigquery/connections.py
-// https://github.dev/tadyjp/vscode-query-runner/blob/master/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-db-bigquery/src/bigquery_connection.ts
-// https://github.dev/innoverio/vscode-dbt-power-user
-// https://github.dev/innoverio/vscode-dbt-power-user/src/commandProcessExecution.ts
-// https://github.dev/innoverio/vscode-dbt-power-user/src/dbt_client/dbtCommandQueue.ts
-// https://github.dev/innoverio/vscode-dbt-power-user/src/dbt_client/dbtCommandFactory.ts

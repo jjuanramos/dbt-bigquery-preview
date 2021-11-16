@@ -46628,14 +46628,22 @@ function activate(context) {
       console.log("We compiled the file!");
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
         console.log("we detected the file changed!");
-        console.log(`${uri.toString()}`);
-        console.log(`${filePath}`);
-        if (uri.toString().includes(filePath)) {
-          console.log("the uri contains the file!");
-          const compiledQuery = getCompiledQuery(filePath);
-          console.log(`${compiledQuery}`);
+        const compiledFilePath = getCompiledPath(filePath);
+        if (uri.toString().includes(compiledFilePath)) {
+          console.log("the uri contains the compiled file path!");
+          const compiledQuery = getCompiledQuery(compiledFilePath);
           const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
-          console.log("We ran the query!");
+          const data = queryResult[0][0].name;
+          vscode3.window.showInformationMessage(`${data}`);
+        }
+      }));
+      fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
+        console.log("we detected the file was created!");
+        const compiledFilePath = getCompiledPath(filePath);
+        if (uri.toString().includes(compiledFilePath)) {
+          console.log("the uri contains the compiled file path!");
+          const compiledQuery = getCompiledQuery(compiledFilePath);
+          const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
           const data = queryResult[0][0].name;
           vscode3.window.showInformationMessage(`${data}`);
         }
@@ -46655,9 +46663,12 @@ function getFileName(filePath) {
     return fileName;
   }
 }
-function getCompiledQuery(filePath) {
+function getCompiledPath(filePath) {
   const filePathSplitted = filePath.split("/models/");
   const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${projectName}/models/${filePathSplitted[1]}`;
+  return compiledFilePath;
+}
+function getCompiledQuery(compiledFilePath) {
   const compiledQuery = fs.readFileSync(compiledFilePath, "utf-8");
   return compiledQuery;
 }
