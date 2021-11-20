@@ -140,8 +140,6 @@ let results = (async() => {
     return data;
 })();
 
-console.log(results);
-
 
 // const data = [ [ { id: 1000, name: 'Juanito bananas' } ] ];
 
