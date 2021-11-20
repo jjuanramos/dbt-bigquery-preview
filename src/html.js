@@ -143,3 +143,148 @@ let results = (async() => {
 
 // const data = [ [ { id: 1000, name: 'Juanito bananas' } ] ];
 
+
+const data = [
+    {
+      "id": 1000,
+      "name": "Juanito Bananas",
+      "hobbies": [],
+      "pets": [
+        "Diego",
+        "Wolo"
+      ],
+      "time_they_were_killed": {
+        "value": "2021-11-20T15:26:59.364Z"
+      }
+    },
+    {
+      "id": 1001,
+      "name": "Faloria Rangel",
+      "hobbies": [
+        {
+          "name": "arepas",
+          "type": "food"
+        },
+        {
+          "name": "c.tangana",
+          "type": "music"
+        }
+      ],
+      "pets": [
+        "Milu",
+        "Campi",
+        "Lilo"
+      ],
+      "time_they_were_killed": {
+        "value": "2021-11-20T15:26:59.364Z"
+      }
+    }
+];
+
+function transformJSObject(columnObject) {
+  if (columnObject === undefined || columnObject === null) {
+    return "";
+  } else {
+    const columnNames = Object.keys(columnObject);
+    if (columnNames.length === 1 && columnNames.includes("value")) {
+      return columnObject["value"];
+    } else if (columnNames.length === 0) {
+      return ""
+    } else {
+      return JSON.stringify(columnObject, null, "  ");
+    }
+  }
+}
+// Clean it up
+function wrapDataInHTML(data) {
+  // obtain header
+  let html = '<tr><td></td>';
+  const columnNames = Object.keys(data[0]);
+  for (const name of columnNames) {
+    html += `<td>${name}</td>`;
+  };
+  html += '</tr>';
+
+  // check type of columns. We want to know whether
+  // a column is an array, and get the largest array for each
+  // row in order to know how many subrows that row should have
+
+  // Once we know what columns are arrays, we have to start out
+  // by checking which is the largest array for that given row
+
+  // if object and only one key and key is value show it as string -->
+  // handle objects in different method
+  let arrayColumnNames = [];
+  const firstRow = data[0];
+  for (const name of columnNames) {
+    if (Array.isArray(firstRow[name])) {
+      arrayColumnNames.push(name);
+    }
+  }
+
+  for (let pos = 0; pos < data.length; pos++) {
+    let row = data[pos];
+    // we only need to do this for the tables where there are
+    // array columns.
+    if (arrayColumnNames.length > 0) {
+      let maximumLength = 0;
+      // checks number of subrows needed for that row
+      for (const name of arrayColumnNames) {
+        if (row[name].length > maximumLength) {
+          maximumLength = row[name].length;
+        }
+      }
+
+      for (let subrow = 0; subrow < maximumLength; subrow++) {
+        // we want the first column to indicate the number
+        // of the row
+        if (subrow === 0) {
+          html += `<tr><td>${pos + 1}</td>`;
+        } else {
+          html += `<tr><td></td>`;
+        }
+        for (const name of columnNames) {
+          // if column is array, use subrow
+          if (arrayColumnNames.includes(name)) {
+            const content = row[name][subrow];
+            if (content === undefined || content === null) {
+              html += `<td></td>`;
+            } else if (content instanceof Object && Array.isArray(content) == false) {
+              const value = transformJSObject(content);
+              html += `<td>${value}</td>`;
+            } else {
+              html += `<td>${content}</td>`;
+            }
+          // beyond the first subrow, non-array columns should be empty
+          } else if (subrow > 0) {
+            html += `<td></td>`;
+          } else if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
+            const value = transformJSObject(row[name]);
+            html += `<td>${value}</td>`;
+          } else {
+            html += `<td>${row[name]}</td>`;
+          }
+        }
+
+        html += '</tr>';
+      } 
+    } else {
+      html += `<tr><td>${pos + 1}</td>`;
+      for (const name of columnNames) {
+        if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
+          const value = transformJSObject(row[name]);
+          html += `<td>${value}</td>`;
+        } else {
+          html += `<td>${row[name]}</td>`;
+        }
+      }
+      html += '</tr>';
+    }
+  }
+
+  return html;
+}
+
+const html = wrapDataInHTML(data);
+
+console.log(html);
