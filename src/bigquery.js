@@ -93,7 +93,7 @@ export class BigQueryRunner {
       },
       table: this.makeTable(rows),
       json: JSON.stringify(rows, null, "  "),
-      data: data,
+      data: rows,
       detail: JSON.stringify(metadata.statistics, null, "  "),
     };
   }
