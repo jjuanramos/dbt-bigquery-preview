@@ -36,15 +36,19 @@ function activate(context) {
 			terminal.sendText(`dbt compile -s ${fileName}`);
 
 			fileWatcher.onDidChange(async (uri) => {
-				const queryResult = await getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
-				const data = queryResult[0][0].name;
-				vscode.window.showInformationMessage(`${data}`);
+				const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+				if (queryResult.status === "success") {
+					console.log(queryResult);
+					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+				};
 			});
 
 			fileWatcher.onDidCreate(async (uri) => {
-				const queryResult = await getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
-				const data = queryResult[0][0].name;
-				vscode.window.showInformationMessage(`${data}`);
+				const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+				if (queryResult.status === "success") {
+					console.log(queryResult);
+					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+				};
 			});
 
 		} catch(e) {
@@ -97,11 +101,11 @@ function getCompiledQuery(compiledFilePath) {
 	return compiledQuery;
 }
 
-async function getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner) {
+async function getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner) {
 	const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
 	if (uri.toString().includes(compiledFilePath)) {
 		const compiledQuery = getCompiledQuery(compiledFilePath);
-		const queryResult = await bigQueryRunner.runBigQueryJob(compiledQuery);
+		const queryResult = await bigQueryRunner.query(compiledQuery);
 		return queryResult;
 	}
 }
@@ -140,7 +144,10 @@ module.exports = {
 }
 
 // to do
-// show result in different window
+// 1. Create function that, given a simple input array, returns the wanted html table
+// 2. Improve function so it handles nested arrays / objects
+// 3. Render function in the screen
 // utils
+// https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts
 // https://github.com/benawad/vstodo/blob/master/extension/src/HelloWorldPanel.ts

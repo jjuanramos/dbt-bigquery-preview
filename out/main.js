@@ -1,4 +1,5 @@
 var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[Object.keys(fn)[0]])(fn = 0)), res;
@@ -10,6 +11,10 @@ var __export = (target, all) => {
   __markAsModule(target);
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
 };
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
@@ -40899,19 +40904,129 @@ var init_google_auth = __esm({
   }
 });
 
+// node_modules/flat/index.js
+var require_flat = __commonJS({
+  "node_modules/flat/index.js"(exports2, module2) {
+    module2.exports = flatten;
+    flatten.flatten = flatten;
+    flatten.unflatten = unflatten;
+    function isBuffer(obj) {
+      return obj && obj.constructor && typeof obj.constructor.isBuffer === "function" && obj.constructor.isBuffer(obj);
+    }
+    function keyIdentity(key) {
+      return key;
+    }
+    function flatten(target, opts) {
+      opts = opts || {};
+      const delimiter = opts.delimiter || ".";
+      const maxDepth = opts.maxDepth;
+      const transformKey = opts.transformKey || keyIdentity;
+      const output = {};
+      function step(object, prev, currentDepth) {
+        currentDepth = currentDepth || 1;
+        Object.keys(object).forEach(function(key) {
+          const value = object[key];
+          const isarray = opts.safe && Array.isArray(value);
+          const type = Object.prototype.toString.call(value);
+          const isbuffer = isBuffer(value);
+          const isobject = type === "[object Object]" || type === "[object Array]";
+          const newKey = prev ? prev + delimiter + transformKey(key) : transformKey(key);
+          if (!isarray && !isbuffer && isobject && Object.keys(value).length && (!opts.maxDepth || currentDepth < maxDepth)) {
+            return step(value, newKey, currentDepth + 1);
+          }
+          output[newKey] = value;
+        });
+      }
+      step(target);
+      return output;
+    }
+    function unflatten(target, opts) {
+      opts = opts || {};
+      const delimiter = opts.delimiter || ".";
+      const overwrite = opts.overwrite || false;
+      const transformKey = opts.transformKey || keyIdentity;
+      const result = {};
+      const isbuffer = isBuffer(target);
+      if (isbuffer || Object.prototype.toString.call(target) !== "[object Object]") {
+        return target;
+      }
+      function getkey(key) {
+        const parsedKey = Number(key);
+        return isNaN(parsedKey) || key.indexOf(".") !== -1 || opts.object ? key : parsedKey;
+      }
+      function addKeys(keyPrefix, recipient, target2) {
+        return Object.keys(target2).reduce(function(result2, key) {
+          result2[keyPrefix + delimiter + key] = target2[key];
+          return result2;
+        }, recipient);
+      }
+      function isEmpty(val) {
+        const type = Object.prototype.toString.call(val);
+        const isArray = type === "[object Array]";
+        const isObject = type === "[object Object]";
+        if (!val) {
+          return true;
+        } else if (isArray) {
+          return !val.length;
+        } else if (isObject) {
+          return !Object.keys(val).length;
+        }
+      }
+      target = Object.keys(target).reduce(function(result2, key) {
+        const type = Object.prototype.toString.call(target[key]);
+        const isObject = type === "[object Object]" || type === "[object Array]";
+        if (!isObject || isEmpty(target[key])) {
+          result2[key] = target[key];
+          return result2;
+        } else {
+          return addKeys(key, result2, flatten(target[key], opts));
+        }
+      }, {});
+      Object.keys(target).forEach(function(key) {
+        const split = key.split(delimiter).map(transformKey);
+        let key1 = getkey(split.shift());
+        let key2 = getkey(split[0]);
+        let recipient = result;
+        while (key2 !== void 0) {
+          if (key1 === "__proto__") {
+            return;
+          }
+          const type = Object.prototype.toString.call(recipient[key1]);
+          const isobject = type === "[object Object]" || type === "[object Array]";
+          if (!overwrite && !isobject && typeof recipient[key1] !== "undefined") {
+            return;
+          }
+          if (overwrite && !isobject || !overwrite && recipient[key1] == null) {
+            recipient[key1] = typeof key2 === "number" && !opts.object ? [] : {};
+          }
+          recipient = recipient[key1];
+          if (split.length > 0) {
+            key1 = getkey(split.shift());
+            key2 = getkey(split[0]);
+          }
+        }
+        recipient[key1] = unflatten(target[key], opts);
+      });
+      return result;
+    }
+  }
+});
+
 // src/bigquery.js
 var bigquery_exports = {};
 __export(bigquery_exports, {
   BigQueryRunner: () => BigQueryRunner
 });
-var vscode2, bigquery, google_auth2, BigQueryRunner;
+var vscode2, bigquery, google_auth2, flat, BigQueryRunner;
 var init_bigquery = __esm({
   "src/bigquery.js"() {
     vscode2 = require("vscode");
     bigquery = require_src13();
     google_auth2 = (init_google_auth(), google_auth_exports);
+    flat = require_flat();
     BigQueryRunner = class {
       constructor(config2) {
+        __publicField(this, "job", null);
         this.config = config2;
         this.googleAuth = new google_auth2.GoogleAuth();
         this.client = new bigquery.BigQuery({
@@ -40932,21 +41047,81 @@ var init_bigquery = __esm({
           this.client.authClient.cachedCredential = refreshClient;
         });
       }
-      createBigQueryJob(query) {
+      query(queryText, isDryRun) {
         return __async(this, null, function* () {
-          const [job] = yield this.client.createQueryJob(query);
-          return job;
-        });
-      }
-      runBigQueryJob(query) {
-        return __async(this, null, function* () {
+          let data;
           try {
-            const job = yield this.createBigQueryJob(query);
-            return yield job.getQueryResults();
-          } catch (e) {
-            throw vscode2.window.showErrorMessage(`${e}`);
+            data = yield this.client.createQueryJob({
+              query: queryText,
+              dryRun: !!isDryRun
+            });
+          } catch (err) {
+            vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
+            throw err;
+          }
+          this.job = data[0];
+          if (!this.job) {
+            throw new Error("No job was found.");
+          }
+          let result;
+          try {
+            result = yield this.job.getQueryResults({
+              autoPaginate: true
+            });
+          } catch (err) {
+            vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
+            throw err;
+          }
+          try {
+            return yield this.processResults(result[0]);
+          } catch (err) {
+            vscode2.window.showErrorMessage(`Failed to get results: ${err}`);
+            throw err;
           }
         });
+      }
+      processResults(rows) {
+        return __async(this, null, function* () {
+          if (!this.job) {
+            throw new Error("No job was found.");
+          }
+          const metadata = (yield this.job.getMetadata())[0];
+          return {
+            status: "success",
+            info: {
+              projectId: metadata.jobReference.projectId,
+              jobId: metadata.id,
+              location: this.job.location,
+              jobLink: metadata.selfLink,
+              creationTime: metadata.statistics.creationTime,
+              startTime: metadata.statistics.startTime,
+              endTime: metadata.statistics.endTime,
+              userEmail: metadata.user_email,
+              totalBytesProcessed: metadata.statistics.totalBytesProcessed,
+              status: metadata.status.state
+            },
+            table: this.makeTable(rows),
+            json: JSON.stringify(rows, null, "  "),
+            detail: JSON.stringify(metadata.statistics, null, "  ")
+          };
+        });
+      }
+      makeTable(rows) {
+        const headers = [];
+        Object.keys(flat.flatten(rows[0], { safe: true })).forEach((name) => headers.push(name));
+        let table = [];
+        rows.forEach((val, idx) => {
+          let v = flat.flatten(val, { safe: true });
+          let tableRow = [];
+          headers.forEach((name, col) => {
+            tableRow.push(v[name]);
+          });
+          table.push(tableRow);
+        });
+        return {
+          headers,
+          rows: table
+        };
       }
     };
   }
@@ -46612,8 +46787,9 @@ function activate(context) {
       terminal.sendText(`dbt compile -s ${fileName}`);
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
         const queryResult = yield getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
-        const data = queryResult[0][0].name;
-        vscode3.window.showInformationMessage(`${data}`);
+        if (queryResult.status === "success") {
+          vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+        }
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
         const queryResult = yield getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
@@ -46666,7 +46842,7 @@ function getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner) {
     const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
     if (uri.toString().includes(compiledFilePath)) {
       const compiledQuery = getCompiledQuery(compiledFilePath);
-      const queryResult = yield bigQueryRunner.runBigQueryJob(compiledQuery);
+      const queryResult = yield bigQueryRunner.query(compiledQuery);
       return queryResult;
     }
   });
