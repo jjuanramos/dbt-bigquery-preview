@@ -10721,29 +10721,34 @@ var require_options = __commonJS({
 var require_package = __commonJS({
   "node_modules/google-auth-library/package.json"(exports2, module2) {
     module2.exports = {
-      _from: "google-auth-library",
+      _args: [
+        [
+          "google-auth-library@7.10.2",
+          "/home/juan/coding/dbt-bigquery-preview"
+        ]
+      ],
+      _from: "google-auth-library@7.10.2",
       _id: "google-auth-library@7.10.2",
       _inBundle: false,
       _integrity: "sha512-M37o9Kxa/TLvOLgF71SXvLeVEP5sbSTmKl1zlIgl72SFy5PtsU3pOdu8G8MIHHpQ3/NZabDI8rQkA9DvQVKkPA==",
       _location: "/google-auth-library",
       _phantomChildren: {},
       _requested: {
-        type: "tag",
+        type: "version",
         registry: true,
-        raw: "google-auth-library",
+        raw: "google-auth-library@7.10.2",
         name: "google-auth-library",
         escapedName: "google-auth-library",
-        rawSpec: "",
+        rawSpec: "7.10.2",
         saveSpec: null,
-        fetchSpec: "latest"
+        fetchSpec: "7.10.2"
       },
       _requiredBy: [
-        "#USER",
-        "/"
+        "/",
+        "/@google-cloud/common"
       ],
       _resolved: "https://registry.npmjs.org/google-auth-library/-/google-auth-library-7.10.2.tgz",
-      _shasum: "7e48176f50e725e1d65b6a838ec9e9464e6ba689",
-      _spec: "google-auth-library",
+      _spec: "7.10.2",
       _where: "/home/juan/coding/dbt-bigquery-preview",
       author: {
         name: "Google Inc."
@@ -10751,7 +10756,6 @@ var require_package = __commonJS({
       bugs: {
         url: "https://github.com/googleapis/google-auth-library-nodejs/issues"
       },
-      bundleDependencies: false,
       dependencies: {
         arrify: "^2.0.0",
         "base64-js": "^1.3.0",
@@ -10763,7 +10767,6 @@ var require_package = __commonJS({
         jws: "^4.0.0",
         "lru-cache": "^6.0.0"
       },
-      deprecated: false,
       description: "Google APIs Authentication Client Library for Node.js",
       devDependencies: {
         "@compodoc/compodoc": "^1.1.7",
@@ -39940,30 +39943,34 @@ var require_job = __commonJS({
 var require_package2 = __commonJS({
   "node_modules/@google-cloud/bigquery/package.json"(exports2, module2) {
     module2.exports = {
-      _from: "@google-cloud/bigquery",
+      _args: [
+        [
+          "@google-cloud/bigquery@5.9.1",
+          "/home/juan/coding/dbt-bigquery-preview"
+        ]
+      ],
+      _from: "@google-cloud/bigquery@5.9.1",
       _id: "@google-cloud/bigquery@5.9.1",
       _inBundle: false,
       _integrity: "sha512-80pMzhAC299CSiXW9TvR8AARLaPRDeQg8pSAvrVcLXcUkx1hWvVx2m94nBZ4KUoZb4LVWIHHYhvFB6XvIcxqjw==",
       _location: "/@google-cloud/bigquery",
       _phantomChildren: {},
       _requested: {
-        type: "tag",
+        type: "version",
         registry: true,
-        raw: "@google-cloud/bigquery",
+        raw: "@google-cloud/bigquery@5.9.1",
         name: "@google-cloud/bigquery",
         escapedName: "@google-cloud%2fbigquery",
         scope: "@google-cloud",
-        rawSpec: "",
+        rawSpec: "5.9.1",
         saveSpec: null,
-        fetchSpec: "latest"
+        fetchSpec: "5.9.1"
       },
       _requiredBy: [
-        "#USER",
         "/"
       ],
       _resolved: "https://registry.npmjs.org/@google-cloud/bigquery/-/bigquery-5.9.1.tgz",
-      _shasum: "96cee86fa0caef4a7e1470efde9295bc09f5981f",
-      _spec: "@google-cloud/bigquery",
+      _spec: "5.9.1",
       _where: "/home/juan/coding/dbt-bigquery-preview",
       author: {
         name: "Google LLC"
@@ -39971,7 +39978,6 @@ var require_package2 = __commonJS({
       bugs: {
         url: "https://github.com/googleapis/nodejs-bigquery/issues"
       },
-      bundleDependencies: false,
       dependencies: {
         "@google-cloud/common": "^3.1.0",
         "@google-cloud/paginator": "^3.0.0",
@@ -39985,7 +39991,6 @@ var require_package2 = __commonJS({
         "stream-events": "^1.0.5",
         uuid: "^8.0.0"
       },
-      deprecated: false,
       description: "Google BigQuery Client Library for Node.js",
       devDependencies: {
         "@google-cloud/storage": "^5.0.0",
@@ -41100,28 +41105,210 @@ var init_bigquery = __esm({
               totalBytesProcessed: metadata.statistics.totalBytesProcessed,
               status: metadata.status.state
             },
-            table: this.makeTable(rows),
-            json: JSON.stringify(rows, null, "  "),
+            data: rows,
             detail: JSON.stringify(metadata.statistics, null, "  ")
           };
         });
       }
-      makeTable(rows) {
-        const headers = [];
-        Object.keys(flat.flatten(rows[0], { safe: true })).forEach((name) => headers.push(name));
-        let table = [];
-        rows.forEach((val, idx) => {
-          let v = flat.flatten(val, { safe: true });
-          let tableRow = [];
-          headers.forEach((name, col) => {
-            tableRow.push(v[name]);
-          });
-          table.push(tableRow);
-        });
-        return {
-          headers,
-          rows: table
-        };
+    };
+  }
+});
+
+// src/html.js
+var html_exports = {};
+__export(html_exports, {
+  HTMLResultsWrapper: () => HTMLResultsWrapper
+});
+var HTMLResultsWrapper;
+var init_html = __esm({
+  "src/html.js"() {
+    HTMLResultsWrapper = class {
+      constructor(data) {
+        this.data = data;
+        this.columnNames = Object.keys(data[0]);
+      }
+      getDataWrapped() {
+        const htmlData = this.wrapDataInHTML();
+        const dataWrapped = this.createHTMLTemplate(htmlData);
+        return dataWrapped;
+      }
+      createHTMLTemplate(table) {
+        return `<!DOCTYPE html>
+      <html lang="en">
+      
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Preview dbt</title>
+          <style>               
+            html {
+            font-family: sans-serif;
+            }
+      
+            .content {
+            display: none;
+            overflow: hidden;
+            }
+      
+            table {
+            border-collapse: collapse;
+            border: 2px solid rgb(200,200,200);
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            }
+      
+            td, th {
+            border: 1px solid rgb(190,190,190);
+            padding: 10px 20px;
+            }
+      
+            th {
+            background-color: rgb(235,235,235);
+            }
+      
+            td {
+            text-align: center;
+            }
+      
+            .even {
+            background-color: rgb(250,250,250);
+            }
+      
+            .odd {
+            background-color: rgb(245,245,245);
+            }
+      
+            caption {
+            padding: 10px;
+            }
+          </style>
+      </head>
+      
+      <body style="padding: 10px;">
+          <table>${table}</table>
+      </body>
+      
+      </html>`;
+      }
+      wrapJSObject(jsObject) {
+        let content = "";
+        if (jsObject === void 0 || jsObject === null) {
+          content = "";
+        } else {
+          const columnNames = Object.keys(jsObject);
+          if (columnNames.length === 1 && columnNames.includes("value")) {
+            content = jsObject["value"];
+          } else if (columnNames.length === 0) {
+            content = "";
+          } else {
+            for (const columnName of columnNames) {
+              let columnContent = jsObject[columnName];
+              if (columnContent === void 0 || columnContent === null) {
+                columnContent = "";
+              }
+              content += `
+                  ${columnName}: ${jsObject[columnName]},<br>
+                  `;
+            }
+          }
+        }
+        return `
+      <td>
+          ${content}
+      </td>
+      `;
+      }
+      createHTMLHeader() {
+        let htmlHeader = "<tr><td></td>";
+        for (const name of this.columnNames) {
+          htmlHeader += `<td>${name}</td>`;
+        }
+        ;
+        htmlHeader += "</tr>";
+        return htmlHeader;
+      }
+      getArrayColumnNames() {
+        let arrayColumnNames = [];
+        const firstRow = this.data[0];
+        for (const name of this.columnNames) {
+          if (Array.isArray(firstRow[name])) {
+            arrayColumnNames.push(name);
+          }
+        }
+        return arrayColumnNames;
+      }
+      getHTMLforRowWithArrayColumn(row, pos, maximumLength, arrayColumnNames, rowStyle) {
+        let htmlRow = "";
+        for (let subrow = 0; subrow < maximumLength; subrow++) {
+          if (subrow === 0) {
+            htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
+          } else {
+            htmlRow += `<tr class="${rowStyle}"><td></td>`;
+          }
+          for (const name of this.columnNames) {
+            if (arrayColumnNames.includes(name)) {
+              const content = row[name][subrow];
+              if (content === void 0 || content === null) {
+                htmlRow += `<td></td>`;
+              } else if (content instanceof Object && Array.isArray(content) == false) {
+                const htmlContent = this.wrapJSObject(content);
+                htmlRow += htmlContent;
+              } else {
+                htmlRow += `<td>${content}</td>`;
+              }
+            } else if (subrow > 0) {
+              htmlRow += `<td></td>`;
+            } else if (row[name] instanceof Object) {
+              const htmlContent = this.wrapJSObject(row[name]);
+              htmlRow += htmlContent;
+            } else {
+              htmlRow += `<td>${row[name]}</td>`;
+            }
+          }
+          htmlRow += "</tr>";
+        }
+        return htmlRow;
+      }
+      getHTMLforRow(row, pos, arrayColumnNames, rowStyle) {
+        let htmlRow = `<tr class="${rowStyle}><td>${pos + 1}</td>`;
+        for (const name of this.columnNames) {
+          if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
+            const htmlContent = this.wrapJSObject(row[name]);
+            htmlRow += htmlContent;
+          } else {
+            htmlRow += `<td>${row[name]}</td>`;
+          }
+        }
+        htmlRow += "</tr>";
+        return htmlRow;
+      }
+      wrapDataInHTML() {
+        ;
+        let htmlData = this.createHTMLHeader();
+        const arrayColumnNames = this.getArrayColumnNames();
+        let rowStyle = "odd";
+        for (let pos = 0; pos < this.data.length; pos++) {
+          const row = this.data[pos];
+          if (arrayColumnNames.length > 0) {
+            let maximumLength = 0;
+            for (const name of arrayColumnNames) {
+              if (row[name].length > maximumLength) {
+                maximumLength = row[name].length;
+              }
+            }
+            const htmlRow = this.getHTMLforRowWithArrayColumn(row, pos, maximumLength, arrayColumnNames, rowStyle);
+            htmlData += htmlRow;
+          } else {
+            const htmlRow = this.getHTMLforRow(row, pos, arrayColumnNames, rowStyle);
+            htmlData += htmlRow;
+          }
+          if (rowStyle === "odd") {
+            rowStyle = "even";
+          } else {
+            rowStyle = "odd";
+          }
+        }
+        return htmlData;
       }
     };
   }
@@ -46762,6 +46949,7 @@ var require_yaml = __commonJS({
 // extension.js
 var vscode3 = require("vscode");
 var bigquery2 = (init_bigquery(), bigquery_exports);
+var htmlWrapper = (init_html(), html_exports);
 var fs = require("fs");
 var yaml = require_yaml();
 var config;
@@ -46786,15 +46974,22 @@ function activate(context) {
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        const queryResult = yield getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
+        const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
         if (queryResult.status === "success") {
+          const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+          console.log(dataWrapped);
           vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
         }
+        ;
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        const queryResult = yield getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner);
-        const data = queryResult[0][0].name;
-        vscode3.window.showInformationMessage(`${data}`);
+        const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+        if (queryResult.status === "success") {
+          const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+          console.log(dataWrapped);
+          vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+        }
+        ;
       }));
     } catch (e) {
       vscode3.window.showErrorMessage(e);
@@ -46837,7 +47032,7 @@ function getCompiledQuery(compiledFilePath) {
   const compiledQuery = fs.readFileSync(compiledFilePath, "utf-8");
   return compiledQuery;
 }
-function getDbtResults(uri, filePath, dbtProjectName, bigQueryRunner) {
+function getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner) {
   return __async(this, null, function* () {
     const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
     if (uri.toString().includes(compiledFilePath)) {

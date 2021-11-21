@@ -91,33 +91,8 @@ export class BigQueryRunner {
         totalBytesProcessed: metadata.statistics.totalBytesProcessed,
         status: metadata.status.state,
       },
-      table: this.makeTable(rows),
-      json: JSON.stringify(rows, null, "  "),
       data: rows,
       detail: JSON.stringify(metadata.statistics, null, "  "),
-    };
-  }
-
-  makeTable(rows) {
-    const headers = [];
-    Object.keys(flat.flatten(rows[0], { safe: true })).forEach(name => headers.push(name));
-
-    let table = [];
-
-    rows.forEach((val, idx) => {
-      // Flatten each row, and for each header (name), insert the matching
-      // object property (v[name])
-      let v = flat.flatten(val, { safe: true });
-      let tableRow= [];
-      headers.forEach((name, col) => {
-        tableRow.push(v[name]);
-      });
-      table.push(tableRow);
-    });
-
-    return {
-      headers,
-      rows: table
     };
   }
 }

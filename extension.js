@@ -1,5 +1,6 @@
 const vscode = require('vscode');
 const bigquery = require('./src/bigquery');
+const htmlWrapper = require('./src/html');
 const fs = require('fs');
 const yaml = require('yaml');
 
@@ -38,7 +39,8 @@ function activate(context) {
 			fileWatcher.onDidChange(async (uri) => {
 				const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
 				if (queryResult.status === "success") {
-					console.log(queryResult);
+					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+					console.log(dataWrapped);
 					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
 				};
 			});
@@ -46,7 +48,8 @@ function activate(context) {
 			fileWatcher.onDidCreate(async (uri) => {
 				const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
 				if (queryResult.status === "success") {
-					console.log(queryResult);
+					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+					console.log(dataWrapped);
 					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
 				};
 			});
