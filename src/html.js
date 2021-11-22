@@ -124,9 +124,11 @@ export class HTMLResultsWrapper {
       let htmlRow = '';
       for (let subrow = 0; subrow < maximumLength; subrow++) {
           if (subrow === 0) {
-              htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
+            //   htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
+              htmlRow += `<tr><td>${pos + 1}</td>`;
             } else {
-              htmlRow += `<tr class="${rowStyle}"><td></td>`;
+            //   htmlRow += `<tr class="${rowStyle}"><td></td>`;
+              htmlRow += `<tr><td></td>`;
           }
 
           for (const name of this.columnNames) {
@@ -158,7 +160,8 @@ export class HTMLResultsWrapper {
   }
 
   getHTMLforRow(row, pos, arrayColumnNames,rowStyle) {
-      let htmlRow = `<tr class="${rowStyle}><td>${pos + 1}</td>`;
+    //   let htmlRow = `<tr class="${rowStyle}><td>${pos + 1}</td>`;
+      let htmlRow = `<tr><td>${pos + 1}</td>`;
       for (const name of this.columnNames) {
           if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
               const htmlContent = this.wrapJSObject(row[name]);

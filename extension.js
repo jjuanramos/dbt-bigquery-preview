@@ -42,6 +42,7 @@ function activate(context) {
 					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 					console.log(dataWrapped);
 					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+					createWebViewPanel(dataWrapped);
 				};
 			});
 
@@ -51,6 +52,7 @@ function activate(context) {
 					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 					console.log(dataWrapped);
 					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+					createWebViewPanel(dataWrapped);
 				};
 			});
 
@@ -68,6 +70,26 @@ function readConfig() {
 	} catch (e) {
 		vscode.window.showErrorMessage(`failed to read config: ${e}`);
 	}
+}
+
+// turn this into a class that is able to be updated if
+// the html already exists
+function createWebViewPanel(dataWrapped) {
+	const column = vscode.window.activeTextEditor
+      ? vscode.window.activeTextEditor.viewColumn
+      : undefined;
+
+	const panel = vscode.window.createWebviewPanel(
+		"Preview dbt",
+		"Preview dbt",
+		column || vscode.ViewColumn.Two,
+		{
+		  // Enable javascript in the webview
+		  enableScripts: true,
+		}
+	  );
+
+	panel.webview.html = dataWrapped;
 }
 
 function getDbtProjectName(workspacePath) {

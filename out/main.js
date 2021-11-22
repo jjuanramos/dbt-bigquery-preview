@@ -41241,9 +41241,9 @@ var init_html = __esm({
         let htmlRow = "";
         for (let subrow = 0; subrow < maximumLength; subrow++) {
           if (subrow === 0) {
-            htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
+            htmlRow += `<tr><td>${pos + 1}</td>`;
           } else {
-            htmlRow += `<tr class="${rowStyle}"><td></td>`;
+            htmlRow += `<tr><td></td>`;
           }
           for (const name of this.columnNames) {
             if (arrayColumnNames.includes(name)) {
@@ -41270,7 +41270,7 @@ var init_html = __esm({
         return htmlRow;
       }
       getHTMLforRow(row, pos, arrayColumnNames, rowStyle) {
-        let htmlRow = `<tr class="${rowStyle}><td>${pos + 1}</td>`;
+        let htmlRow = `<tr><td>${pos + 1}</td>`;
         for (const name of this.columnNames) {
           if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
             const htmlContent = this.wrapJSObject(row[name]);
@@ -46979,6 +46979,7 @@ function activate(context) {
           const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
           console.log(dataWrapped);
           vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+          createWebViewPanel(dataWrapped);
         }
         ;
       }));
@@ -46988,6 +46989,7 @@ function activate(context) {
           const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
           console.log(dataWrapped);
           vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+          createWebViewPanel(dataWrapped);
         }
         ;
       }));
@@ -47003,6 +47005,13 @@ function readConfig() {
   } catch (e) {
     vscode3.window.showErrorMessage(`failed to read config: ${e}`);
   }
+}
+function createWebViewPanel(dataWrapped) {
+  const column = vscode3.window.activeTextEditor ? vscode3.window.activeTextEditor.viewColumn : void 0;
+  const panel = vscode3.window.createWebviewPanel("Preview dbt", "Preview dbt", column || vscode3.ViewColumn.Two, {
+    enableScripts: true
+  });
+  panel.webview.html = dataWrapped;
 }
 function getDbtProjectName(workspacePath2) {
   try {
