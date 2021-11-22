@@ -72,8 +72,11 @@ function readConfig() {
 	}
 }
 
-// turn this into a class that is able to be updated if
-// the html already exists
+// TODO
+// turn this into a class that:
+//is able to be updated if the html already exists
+// creates the webbiew in another panel, but splits the screen in two (preferably up and down),
+// and showcases the results down
 function createWebViewPanel(dataWrapped) {
 	const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
