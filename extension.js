@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 const bigquery = require('./src/bigquery');
 const htmlWrapper = require('./src/html');
+const resultsPanel = require('./src/resultsPanel');
 const fs = require('fs');
 const yaml = require('yaml');
 
@@ -11,6 +12,8 @@ const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
 function activate(context) {
 	readConfig();
+	let currentPanel = new resultsPanel.ResultsPanel();
+
 	const fileWatcher = vscode.workspace.createFileSystemWatcher(
 		new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
 	);
@@ -42,7 +45,7 @@ function activate(context) {
 					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 					console.log(dataWrapped);
 					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-					createWebViewPanel(dataWrapped);
+					currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
 				};
 			});
 
@@ -52,7 +55,7 @@ function activate(context) {
 					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 					console.log(dataWrapped);
 					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-					createWebViewPanel(dataWrapped);
+					currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
 				};
 			});
 
@@ -70,29 +73,6 @@ function readConfig() {
 	} catch (e) {
 		vscode.window.showErrorMessage(`failed to read config: ${e}`);
 	}
-}
-
-// TODO
-// turn this into a class that:
-//is able to be updated if the html already exists
-// creates the webbiew in another panel, but splits the screen in two (preferably up and down),
-// and showcases the results down
-function createWebViewPanel(dataWrapped) {
-	const column = vscode.window.activeTextEditor
-      ? vscode.window.activeTextEditor.viewColumn
-      : undefined;
-
-	const panel = vscode.window.createWebviewPanel(
-		"Preview dbt",
-		"Preview dbt",
-		column || vscode.ViewColumn.Two,
-		{
-		  // Enable javascript in the webview
-		  enableScripts: true,
-		}
-	  );
-
-	panel.webview.html = dataWrapped;
 }
 
 function getDbtProjectName(workspacePath) {
@@ -178,4 +158,3 @@ module.exports = {
 // utils
 // https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts
-// https://github.com/benawad/vstodo/blob/master/extension/src/HelloWorldPanel.ts

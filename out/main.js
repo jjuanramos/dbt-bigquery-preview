@@ -41314,6 +41314,53 @@ var init_html = __esm({
   }
 });
 
+// src/resultsPanel.js
+var resultsPanel_exports = {};
+__export(resultsPanel_exports, {
+  ResultsPanel: () => ResultsPanel
+});
+var vscode3, ResultsPanel;
+var init_resultsPanel = __esm({
+  "src/resultsPanel.js"() {
+    vscode3 = require("vscode");
+    ResultsPanel = class {
+      constructor() {
+        this._panel;
+        this._disposables = [];
+        this.viewType = "dbt-bigquery-preview";
+        this.title = "Preview dbt";
+      }
+      createOrUpdateDataWrappedPanel(dataWrapped) {
+        const column = vscode3.window.activeTextEditor ? vscode3.window.activeTextEditor.viewColumn : void 0;
+        if (this._panel) {
+          this._update(dataWrapped, column);
+        } else {
+          const panel = vscode3.window.createWebviewPanel(this.viewType, this.title, column || vscode3.ViewColumn.Two, {
+            enableScripts: true
+          });
+          this._panel = panel;
+          this._update(dataWrapped, column);
+          this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+        }
+      }
+      _update(dataWrapped, column) {
+        this._panel.webview.html = dataWrapped;
+        this._panel.reveal(column);
+      }
+      dispose() {
+        this._panel.dispose();
+        this._panel = void 0;
+        while (this._disposables.length) {
+          const x = this._disposables.pop();
+          if (x) {
+            x.dispose();
+          }
+        }
+      }
+    };
+  }
+});
+
 // node_modules/yaml/dist/PlainValue-ec8e588e.js
 var require_PlainValue_ec8e588e = __commonJS({
   "node_modules/yaml/dist/PlainValue-ec8e588e.js"(exports2) {
@@ -46947,29 +46994,31 @@ var require_yaml = __commonJS({
 });
 
 // extension.js
-var vscode3 = require("vscode");
+var vscode4 = require("vscode");
 var bigquery2 = (init_bigquery(), bigquery_exports);
 var htmlWrapper = (init_html(), html_exports);
+var resultsPanel = (init_resultsPanel(), resultsPanel_exports);
 var fs = require("fs");
 var yaml = require_yaml();
 var config;
 var configPrefix = "dbt-bigquery-preview";
-var workspacePath = vscode3.workspace.workspaceFolders[0].uri.path;
+var workspacePath = vscode4.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
-  const fileWatcher = vscode3.workspace.createFileSystemWatcher(new vscode3.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
+  let currentPanel = new resultsPanel.ResultsPanel();
+  const fileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
   const dbtProjectName = getDbtProjectName(workspacePath);
   const bigQueryRunner = new bigquery2.BigQueryRunner(config);
-  context.subscriptions.push(vscode3.workspace.onDidChangeConfiguration((event) => {
+  context.subscriptions.push(vscode4.workspace.onDidChangeConfiguration((event) => {
     if (!event.affectsConfiguration(configPrefix)) {
       return;
     }
     readConfig();
     bigQueryRunner.setConfig(config);
   }));
-  const disposable = vscode3.commands.registerCommand("dbt-bigquery-preview.preview", () => __async(this, null, function* () {
+  const disposable = vscode4.commands.registerCommand("dbt-bigquery-preview.preview", () => __async(this, null, function* () {
     try {
-      const filePath = vscode3.window.activeTextEditor.document.fileName;
+      const filePath = vscode4.window.activeTextEditor.document.fileName;
       const fileName = getFileName(filePath);
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
@@ -46978,8 +47027,8 @@ function activate(context) {
         if (queryResult.status === "success") {
           const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
           console.log(dataWrapped);
-          vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-          createWebViewPanel(dataWrapped);
+          vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+          currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
         }
         ;
       }));
@@ -46988,30 +47037,23 @@ function activate(context) {
         if (queryResult.status === "success") {
           const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
           console.log(dataWrapped);
-          vscode3.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-          createWebViewPanel(dataWrapped);
+          vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+          currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
         }
         ;
       }));
     } catch (e) {
-      vscode3.window.showErrorMessage(e);
+      vscode4.window.showErrorMessage(e);
     }
   }));
   context.subscriptions.push(disposable);
 }
 function readConfig() {
   try {
-    config = vscode3.workspace.getConfiguration(configPrefix);
+    config = vscode4.workspace.getConfiguration(configPrefix);
   } catch (e) {
-    vscode3.window.showErrorMessage(`failed to read config: ${e}`);
+    vscode4.window.showErrorMessage(`failed to read config: ${e}`);
   }
-}
-function createWebViewPanel(dataWrapped) {
-  const column = vscode3.window.activeTextEditor ? vscode3.window.activeTextEditor.viewColumn : void 0;
-  const panel = vscode3.window.createWebviewPanel("Preview dbt", "Preview dbt", column || vscode3.ViewColumn.Two, {
-    enableScripts: true
-  });
-  panel.webview.html = dataWrapped;
 }
 function getDbtProjectName(workspacePath2) {
   try {
@@ -47020,13 +47062,13 @@ function getDbtProjectName(workspacePath2) {
     const dbtProjectName = parsedFile.name;
     return dbtProjectName;
   } catch (e) {
-    vscode3.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
+    vscode4.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
   }
 }
 function getFileName(filePath) {
   const lastIndex = filePath.lastIndexOf("/");
   if (lastIndex === -1) {
-    vscode3.window.showErrorMessage("File not found");
+    vscode4.window.showErrorMessage("File not found");
   } else {
     const fileName = filePath.slice(lastIndex + 1, filePath.length).replace(".sql", "");
     return fileName;
@@ -47053,11 +47095,11 @@ function getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner) {
 }
 function selectTerminal() {
   let terminalExists = false;
-  if (vscode3.window.terminals.length === 0) {
-    const terminal = vscode3.window.createTerminal("dbt-bigquery-preview");
+  if (vscode4.window.terminals.length === 0) {
+    const terminal = vscode4.window.createTerminal("dbt-bigquery-preview");
     return terminal;
   }
-  const terminals = vscode3.window.terminals;
+  const terminals = vscode4.window.terminals;
   const items = terminals.map((t) => {
     return {
       label: `${t.name}`,
@@ -47071,7 +47113,7 @@ function selectTerminal() {
     }
   }
   if (!terminalExists) {
-    const terminal = vscode3.window.createTerminal("dbt-bigquery-preview");
+    const terminal = vscode4.window.createTerminal("dbt-bigquery-preview");
     return terminal;
   }
 }
