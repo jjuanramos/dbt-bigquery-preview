@@ -152,9 +152,9 @@ module.exports = {
 }
 
 // to do
-// 1. Create function that, given a simple input array, returns the wanted html table
-// 2. Improve function so it handles nested arrays / objects
-// 3. Render function in the screen
+// 1. Add loading icon while result loads
+// 2. Add nested option for the html
+// 3. Check how to properly split screen in two
 // utils
 // https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts
