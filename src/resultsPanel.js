@@ -9,31 +9,30 @@ export class ResultsPanel {
     }
 
     createOrUpdateDataWrappedPanel(dataWrapped) {
-        const column = vscode.window.activeTextEditor
-            ? vscode.window.activeTextEditor.viewColumn
-            : undefined;
+        // const column = vscode.window.activeTextEditor
+        //     ? vscode.window.activeTextEditor.viewColumn
+        //     : undefined;
 
         if (this._panel) {
-            this._update(dataWrapped, column);
+            this._update(dataWrapped);
         } else {
             const panel = vscode.window.createWebviewPanel(
                 this.viewType,
                 this.title,
-                column || vscode.ViewColumn.Two,
+                vscode.ViewColumn.Two,
                 {
                     enableScripts: true
                 }
             )
             this._panel = panel;
-            this._update(dataWrapped, column);
+            this._update(dataWrapped);
             this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         }
 
     }
 
-    _update(dataWrapped, column) {
+    _update(dataWrapped) {
         this._panel.webview.html = dataWrapped;
-        this._panel.reveal(column);
     }
 
     dispose() {
