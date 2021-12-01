@@ -41370,19 +41370,18 @@ var init_resultsPanel = __esm({
         this.title = "Preview dbt";
       }
       createOrUpdateDataWrappedPanel(dataWrapped) {
-        const column = vscode3.window.activeTextEditor ? vscode3.window.activeTextEditor.viewColumn : void 0;
         if (this._panel) {
-          this._update(dataWrapped, column);
+          this._update(dataWrapped);
         } else {
           const panel = vscode3.window.createWebviewPanel(this.viewType, this.title, vscode3.ViewColumn.Two, {
             enableScripts: true
           });
           this._panel = panel;
-          this._update(dataWrapped, column);
+          this._update(dataWrapped);
           this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         }
       }
-      _update(dataWrapped, column) {
+      _update(dataWrapped) {
         this._panel.webview.html = dataWrapped;
       }
       dispose() {
@@ -47059,26 +47058,34 @@ function activate(context) {
       const filePath = vscode4.window.activeTextEditor.document.fileName;
       const fileName = getFileName(filePath);
       const terminal = selectTerminal();
-      terminal.sendText(`dbt compile -s ${fileName}`);
-      fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-        if (queryResult.status === "success") {
-          const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-          console.log(dataWrapped);
-          vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-          currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-        }
-        ;
-      }));
-      fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-        if (queryResult.status === "success") {
-          const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-          console.log(dataWrapped);
-          vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-          currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-        }
-        ;
+      vscode4.window.withProgress({
+        location: vscode4.ProgressLocation.Notification,
+        cancellable: true,
+        title: "Sending dbt to BigQuery..."
+      }, () => __async(this, null, function* () {
+        terminal.sendText(`dbt compile -s ${fileName}`);
+        fileWatcher.onDidChange((uri) => __async(this, null, function* () {
+          const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+          if (queryResult.status === "success") {
+            const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+            console.log(dataWrapped);
+            vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+            currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+            return;
+          }
+          ;
+        }));
+        fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
+          const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+          if (queryResult.status === "success") {
+            const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+            console.log(dataWrapped);
+            vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+            currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+            return;
+          }
+          ;
+        }));
       }));
     } catch (e) {
       vscode4.window.showErrorMessage(e);

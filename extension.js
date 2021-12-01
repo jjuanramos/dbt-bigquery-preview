@@ -37,26 +37,34 @@ function activate(context) {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
 			const fileName = getFileName(filePath);
 			const terminal = selectTerminal();
-			terminal.sendText(`dbt compile -s ${fileName}`);
+			vscode.window.withProgress({
+					location: vscode.ProgressLocation.Notification,
+					cancellable: true,
+					title: 'Sending dbt to BigQuery...'
+				}, async() => {
+				terminal.sendText(`dbt compile -s ${fileName}`);
+				// transform this into standalone function
+				fileWatcher.onDidChange(async (uri) => {
+					const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+					if (queryResult.status === "success") {
+						const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+						console.log(dataWrapped);
+						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+						currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+						return;
+					};
+				});
 
-			fileWatcher.onDidChange(async (uri) => {
-				const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-				if (queryResult.status === "success") {
-					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-					console.log(dataWrapped);
-					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-					currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-				};
-			});
-
-			fileWatcher.onDidCreate(async (uri) => {
-				const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-				if (queryResult.status === "success") {
-					const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-					console.log(dataWrapped);
-					vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-					currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-				};
+				fileWatcher.onDidCreate(async (uri) => {
+					const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+					if (queryResult.status === "success") {
+						const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+						console.log(dataWrapped);
+						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+						currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+						return;
+					};
+				});
 			});
 
 		} catch(e) {
@@ -155,6 +163,8 @@ module.exports = {
 // 1. Add loading icon while result loads
 // 2. Add nested option for the html
 // 3. Check how to properly split screen in two
+// 4. improve error messages
+// 5. cache existing queries
 // utils
 // https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts
