@@ -119,15 +119,15 @@ export class HTMLResultsWrapper {
                 ${columnName}: ${jsObject[columnName]},<br>
                 `;
             }
-            content = `
-            <div class="collapsible">
-                <p>
-                    { ... }
-                </p>
-            </div>
-            <div class="content">
-                ${content}
-            </div>`;
+            // content = `
+            // <div class="collapsible">
+            //     <p>
+            //         { ... }
+            //     </p>
+            // </div>
+            // <div class="content">
+            //     ${content}
+            // </div>`;
           }
       }
       return `

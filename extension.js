@@ -160,6 +160,7 @@ module.exports = {
 }
 
 // to do
+// 0. Check to create fileWatcher for specific file, then dispose each time.
 // 1. Add loading icon while result loads
 // 2. Add nested option for the html
 // 3. Check how to properly split screen in two
