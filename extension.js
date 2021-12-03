@@ -14,9 +14,6 @@ function activate(context) {
 	readConfig();
 	let currentPanel = new resultsPanel.ResultsPanel();
 
-	const fileWatcher = vscode.workspace.createFileSystemWatcher(
-		new vscode.RelativePattern(`${workspacePath}/target/compiled`, '**/*.sql')
-	);
 	// add onDidChangeFile to update dbt project name if it changes
 	const dbtProjectName = getDbtProjectName(workspacePath);
 	const bigQueryRunner = new bigquery.BigQueryRunner(config);
@@ -36,21 +33,31 @@ function activate(context) {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
 			const fileName = getFileName(filePath);
+			const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+			const fileWatcher = vscode.workspace.createFileSystemWatcher(
+				new vscode.RelativePattern(
+					`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf('/'))}`,
+					'**/*.sql'
+				)
+			);
+
 			const terminal = selectTerminal();
+			// handle cases where dbt compile fails
 			vscode.window.withProgress({
 					location: vscode.ProgressLocation.Notification,
 					cancellable: true,
 					title: 'Sending dbt to BigQuery...'
 				}, async() => {
 				terminal.sendText(`dbt compile -s ${fileName}`);
-				// transform this into standalone function
 				fileWatcher.onDidChange(async (uri) => {
+					// transform this into standalone function
 					const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
 					if (queryResult.status === "success") {
 						const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 						console.log(dataWrapped);
-						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
+						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
 						currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+						fileWatcher.dispose();
 						return;
 					};
 				});
@@ -60,8 +67,10 @@ function activate(context) {
 					if (queryResult.status === "success") {
 						const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 						console.log(dataWrapped);
+						// add conditional, so message is different depending on whether it is mb, bytes or gb
 						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
 						currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+						fileWatcher.dispose();
 						return;
 					};
 				});
@@ -114,7 +123,7 @@ function getCompiledPath(filePath, dbtProjectName) {
 
 function getCompiledQuery(compiledFilePath) {
     const compiledQuery = fs.readFileSync(compiledFilePath, 'utf-8');
-	return compiledQuery;
+	return compiledQuery + ' limit 100';
 }
 
 async function getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner) {
@@ -160,7 +169,6 @@ module.exports = {
 }
 
 // to do
-// 0. Check to create fileWatcher for specific file, then dispose each time.
 // 1. Add loading icon while result loads
 // 2. Add nested option for the html
 // 3. Check how to properly split screen in two
