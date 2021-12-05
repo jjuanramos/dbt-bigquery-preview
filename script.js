@@ -85,3 +85,21 @@ const bq = new BigQueryRunner();
     const val = await results.data[0].revenue_fx_lead_sourcer.constructor()
     console.log(val);
 })()
+
+function rundbtAndRenderResults(
+  uri,
+  filePath,
+  dbtProjectName,
+  bigQueryRunner,
+  currentPanel,
+  fileWatcher
+) {
+  const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+  if (queryResult.status === "success") {
+    const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+    console.log(dataWrapped);
+    vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
+    currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+    fileWatcher.dispose();
+    return;
+}

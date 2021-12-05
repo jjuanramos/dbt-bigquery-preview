@@ -50,29 +50,25 @@ function activate(context) {
 				}, async() => {
 				terminal.sendText(`dbt compile -s ${fileName}`);
 				fileWatcher.onDidChange(async (uri) => {
-					// transform this into standalone function
-					const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-					if (queryResult.status === "success") {
-						const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-						console.log(dataWrapped);
-						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
-						currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-						fileWatcher.dispose();
-						return;
-					};
+					await rundbtAndRenderResults(
+						uri,
+						filePath,
+						dbtProjectName,
+						bigQueryRunner,
+						currentPanel,
+						fileWatcher
+					);
 				});
 
 				fileWatcher.onDidCreate(async (uri) => {
-					const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-					if (queryResult.status === "success") {
-						const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-						console.log(dataWrapped);
-						// add conditional, so message is different depending on whether it is mb, bytes or gb
-						vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-						currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-						fileWatcher.dispose();
-						return;
-					};
+					await rundbtAndRenderResults(
+						uri,
+						filePath,
+						dbtProjectName,
+						bigQueryRunner,
+						currentPanel,
+						fileWatcher
+					);
 				});
 			});
 
@@ -83,6 +79,25 @@ function activate(context) {
 
 	context.subscriptions.push(disposable);
 }
+
+async function rundbtAndRenderResults(
+	uri,
+	filePath,
+	dbtProjectName,
+	bigQueryRunner,
+	currentPanel,
+	fileWatcher
+  ) {
+	const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+	if (queryResult.status === "success") {
+	  const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+	  console.log(dataWrapped);
+	  vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
+	  currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+	  fileWatcher.dispose();
+	  return;
+	}
+  }
 
 function readConfig() {
 	try {

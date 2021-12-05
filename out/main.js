@@ -41240,15 +41240,6 @@ var init_html = __esm({
                 ${columnName}: ${jsObject[columnName]},<br>
                 `;
             }
-            content = `
-            <div class="collapsible">
-                <p>
-                    { ... }
-                </p>
-            </div>
-            <div class="content">
-                ${content}
-            </div>`;
           }
         }
         return `
@@ -47043,7 +47034,6 @@ var workspacePath = vscode4.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
   let currentPanel = new resultsPanel.ResultsPanel();
-  const fileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${workspacePath}/target/compiled`, "**/*.sql"));
   const dbtProjectName = getDbtProjectName(workspacePath);
   const bigQueryRunner = new bigquery2.BigQueryRunner(config);
   context.subscriptions.push(vscode4.workspace.onDidChangeConfiguration((event) => {
@@ -47057,6 +47047,8 @@ function activate(context) {
     try {
       const filePath = vscode4.window.activeTextEditor.document.fileName;
       const fileName = getFileName(filePath);
+      const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+      const fileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
       const terminal = selectTerminal();
       vscode4.window.withProgress({
         location: vscode4.ProgressLocation.Notification,
@@ -47065,26 +47057,10 @@ function activate(context) {
       }, () => __async(this, null, function* () {
         terminal.sendText(`dbt compile -s ${fileName}`);
         fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-          const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-          if (queryResult.status === "success") {
-            const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-            console.log(dataWrapped);
-            vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-            currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-            return;
-          }
-          ;
+          yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher);
         }));
         fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-          const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-          if (queryResult.status === "success") {
-            const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-            console.log(dataWrapped);
-            vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed} bytes processed`);
-            currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-            return;
-          }
-          ;
+          yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher);
         }));
       }));
     } catch (e) {
@@ -47092,6 +47068,19 @@ function activate(context) {
     }
   }));
   context.subscriptions.push(disposable);
+}
+function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher) {
+  return __async(this, null, function* () {
+    const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+    if (queryResult.status === "success") {
+      const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+      console.log(dataWrapped);
+      vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1e9} GB processed`);
+      currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+      fileWatcher.dispose();
+      return;
+    }
+  });
 }
 function readConfig() {
   try {
@@ -47126,7 +47115,7 @@ function getCompiledPath(filePath, dbtProjectName) {
 }
 function getCompiledQuery(compiledFilePath) {
   const compiledQuery = fs.readFileSync(compiledFilePath, "utf-8");
-  return compiledQuery;
+  return compiledQuery + " limit 100";
 }
 function getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner) {
   return __async(this, null, function* () {
