@@ -96,7 +96,16 @@ async function rundbtAndRenderResults(
 		const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
 		if (queryResult.status === "success") {
 			const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-			vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
+			const totalBytes = queryResult.info.totalBytesProcessed;
+			let bytesMessage;
+			if (totalBytes / 1073741824 >= 1) {
+				bytesMessage = `${totalBytes / 1073741824} GB`;
+			} else if (totalBytes / 1048576 >= 1) {
+				bytesMessage = `${totalBytes / 1048576} MB`;
+			} else {
+				bytesMessage = `${totalBytes} bytes`;
+			}
+			vscode.window.showInformationMessage(`${bytesMessage} processed`);
 			currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
 			fileWatcher.dispose();
 			return;
@@ -194,9 +203,9 @@ module.exports = {
 
 // to do
 // 1. Handle failed compilation on dbt compile
+// 2. Solve numeric BQ type
 // 2. give it shortcut
 // 1. Add nested option for the html
-// 2. Change mb/gb messages depending on size.
 // 2. Check how to properly split screen in two
 // 3. improve error messages
 // 4. cache existing queries
