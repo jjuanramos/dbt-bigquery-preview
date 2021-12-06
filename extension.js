@@ -38,6 +38,9 @@ function activate(context) {
 				return;
 			}
 			const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+			// we want to create a class for this, as we want to store the state.
+			// We want to know whether a fileWatcher exists for that file. If it does,
+			// we don't need to create another one
 			const fileWatcher = vscode.workspace.createFileSystemWatcher(
 				new vscode.RelativePattern(
 					`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf('/'))}`,

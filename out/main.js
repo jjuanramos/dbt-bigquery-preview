@@ -47077,25 +47077,30 @@ function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, c
       cancellable: true,
       title: "Waiting for BigQuery to run the code..."
     }, () => __async(this, null, function* () {
-      const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-      if (queryResult.status === "success") {
-        const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-        const totalBytes = queryResult.info.totalBytesProcessed;
-        let bytesMessage;
-        if (totalBytes / 1073741824 >= 1) {
-          bytesMessage = `${totalBytes / 1073741824} GB`;
-        } else if (totalBytes / 1048576 >= 1) {
-          bytesMessage = `${totalBytes / 1048576} MB`;
+      try {
+        const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
+        if (queryResult.status === "success") {
+          const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+          const totalBytes = queryResult.info.totalBytesProcessed;
+          let bytesMessage;
+          if (totalBytes / 1073741824 >= 1) {
+            bytesMessage = `${totalBytes / 1073741824} GB`;
+          } else if (totalBytes / 1048576 >= 1) {
+            bytesMessage = `${totalBytes / 1048576} MB`;
+          } else {
+            bytesMessage = `${totalBytes} bytes`;
+          }
+          vscode4.window.showInformationMessage(`${bytesMessage} processed`);
+          currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+          fileWatcher.dispose();
+          return;
         } else {
-          bytesMessage = `${totalBytes} bytes`;
+          fileWatcher.dispose();
+          return;
         }
-        vscode4.window.showInformationMessage(`${bytesMessage} processed`);
-        currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+      } catch (e) {
         fileWatcher.dispose();
-        return;
-      } else {
-        fileWatcher.dispose();
-        return;
+        vscode4.window.showErrorMessage(e);
       }
     }));
   });
