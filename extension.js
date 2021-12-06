@@ -194,6 +194,7 @@ module.exports = {
 
 // to do
 // 1. Handle failed compilation on dbt compile
+// 2. give it shortcut
 // 1. Add nested option for the html
 // 2. Change mb/gb messages depending on size.
 // 2. Check how to properly split screen in two
