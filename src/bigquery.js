@@ -41,12 +41,13 @@ export class BigQueryRunner {
       });
     } catch (err) {
       vscode.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
-      throw err;
+      return;
     }
     this.job = data[0];
 
     if (!this.job) {
-      throw new Error("No job was found.");
+      vscode.window.showErrorMessage(`No job was found`);
+      return;
     }
 
     // vscode.window.showInformationMessage(`BigQuery job ID: ${this.job.metadata.id}`);
@@ -59,20 +60,21 @@ export class BigQueryRunner {
       });
     } catch (err) {
       vscode.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
-      throw err;
+      return;
     }
 
     try {
       return await this.processResults(result[0]);
     } catch (err) {
       vscode.window.showErrorMessage(`Failed to get results: ${err}`);
-      throw err;
+      return;
     }
   }
 
   async processResults(rows) {
     if (!this.job) {
-      throw new Error('No job was found.');
+      vscode.window.showErrorMessage(`No job was found`);
+      return;
     }
 
     const metadata = (await this.job.getMetadata())[0];

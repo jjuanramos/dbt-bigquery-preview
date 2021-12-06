@@ -33,6 +33,10 @@ function activate(context) {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
 			const fileName = getFileName(filePath);
+			if (!fileName) {
+				vscode.window.showErrorMessage('No file found');
+				return;
+			}
 			const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
 			const fileWatcher = vscode.workspace.createFileSystemWatcher(
 				new vscode.RelativePattern(
@@ -91,12 +95,14 @@ async function rundbtAndRenderResults(
 	}, async() => {
 		const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
 		if (queryResult.status === "success") {
-		const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-		console.log(dataWrapped);
-		vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
-		currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-		fileWatcher.dispose();
-		return;
+			const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
+			vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
+			currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+			fileWatcher.dispose();
+			return;
+		} else {
+			fileWatcher.dispose();
+			return;			
 		}
 	});
   }
@@ -126,6 +132,7 @@ function getFileName(filePath) {
 	const lastIndex = filePath.lastIndexOf('/');
 	if (lastIndex === -1) {
 		vscode.window.showErrorMessage("File not found");
+		return;
 	} else {
 		const fileName = filePath.slice(lastIndex + 1, filePath.length).replace('.sql', '');
 		return fileName;
@@ -186,11 +193,12 @@ module.exports = {
 }
 
 // to do
-// 1. Add loading icon while result loads
-// 2. Add nested option for the html
-// 3. Check how to properly split screen in two
-// 4. improve error messages
-// 5. cache existing queries
+// 1. Handle failed compilation on dbt compile
+// 1. Add nested option for the html
+// 2. Change mb/gb messages depending on size.
+// 2. Check how to properly split screen in two
+// 3. improve error messages
+// 4. cache existing queries
 // utils
 // https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts

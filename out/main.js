@@ -41062,11 +41062,12 @@ var init_bigquery = __esm({
             });
           } catch (err) {
             vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
-            throw err;
+            return;
           }
           this.job = data[0];
           if (!this.job) {
-            throw new Error("No job was found.");
+            vscode2.window.showErrorMessage(`No job was found`);
+            return;
           }
           let result;
           try {
@@ -41075,20 +41076,21 @@ var init_bigquery = __esm({
             });
           } catch (err) {
             vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
-            throw err;
+            return;
           }
           try {
             return yield this.processResults(result[0]);
           } catch (err) {
             vscode2.window.showErrorMessage(`Failed to get results: ${err}`);
-            throw err;
+            return;
           }
         });
       }
       processResults(rows) {
         return __async(this, null, function* () {
           if (!this.job) {
-            throw new Error("No job was found.");
+            vscode2.window.showErrorMessage(`No job was found`);
+            return;
           }
           const metadata = (yield this.job.getMetadata())[0];
           return {
@@ -47047,15 +47049,16 @@ function activate(context) {
     try {
       const filePath = vscode4.window.activeTextEditor.document.fileName;
       const fileName = getFileName(filePath);
+      if (!fileName) {
+        vscode4.window.showErrorMessage("No file found");
+        return;
+      }
       const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
       const fileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
       terminal.show();
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher);
-      }));
-      fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
         yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher);
       }));
     } catch (e) {
@@ -47074,9 +47077,11 @@ function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, c
       const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
       if (queryResult.status === "success") {
         const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-        console.log(dataWrapped);
         vscode4.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1e9} GB processed`);
         currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+        fileWatcher.dispose();
+        return;
+      } else {
         fileWatcher.dispose();
         return;
       }
@@ -47104,6 +47109,7 @@ function getFileName(filePath) {
   const lastIndex = filePath.lastIndexOf("/");
   if (lastIndex === -1) {
     vscode4.window.showErrorMessage("File not found");
+    return;
   } else {
     const fileName = filePath.slice(lastIndex + 1, filePath.length).replace(".sql", "");
     return fileName;
