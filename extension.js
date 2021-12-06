@@ -206,7 +206,7 @@ module.exports = {
 // 2. Solve numeric BQ type
 // 2. give it shortcut
 // 1. Add nested option for the html
-// 2. Check how to properly split screen in two
+// 2. Check how to properly split in up & bottom -> depends on handling 1.
 // 3. improve error messages
 // 4. cache existing queries
 // utils
