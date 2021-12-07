@@ -215,12 +215,11 @@ module.exports = {
 }
 
 // to do
-// 1. Solve numeric BQ type
-// 2. Add nested option for the html
-// 3. give it shortcut
-// 4. Check how to properly split in up & bottom -> depends on handling 1.
-// 5. improve error messages
-// 6. cache existing queries
+// 1. Add nested option for the html
+// 2. give it shortcut
+// 3. Check how to properly split in up & bottom -> depends on handling 1.
+// 4. improve error messages
+// 5. cache existing queries
 // utils
 // https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts

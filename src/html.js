@@ -107,6 +107,21 @@ export class HTMLResultsWrapper {
           const columnNames = Object.keys(jsObject);
           if (columnNames.length === 1 && columnNames.includes("value")) {
             content = jsObject["value"];
+          } else if (
+              columnNames.includes("c") &&
+              columnNames.includes("s") &&
+              columnNames.includes("e") &&
+              columnNames.includes("constructor")
+          ) {
+            const valueEndsAt = jsObject["e"];
+            const valueLength = jsObject["c"].length;
+            if ((valueEndsAt + 1) === valueLength) {
+                content = jsObject["c"].join("");
+            } else {
+                const integerPart = jsObject["c"].slice(0, valueEndsAt + 1).join('');
+                const decimals = jsObject["c"].slice(valueEndsAt + 1).join('');
+                content = `${integerPart}.${decimals}`;
+            }
           } else if (columnNames.length === 0) {
             content = "";
           } else {

@@ -1,5 +1,5 @@
 const bigquery = require('@google-cloud/bigquery');
-const query = 'SELECT revenue_fx_lead_sourcer, lastlogindate FROM ebi-dev-260310.dbt_jramos_transform_warehouse.build_dimemployee where revenue_fx_lead_sourcer is not null and lastlogindate is not null limit 1';
+const query = "select * from northwind-raw.sales_ddbb.Employees";
 
 class BigQueryRunner {
     job = null;
@@ -8,7 +8,7 @@ class BigQueryRunner {
   
         this.client = new bigquery.BigQuery({
           userAgent: 'dbt-bigquery-preview',
-          projectId: 'ebi-dev-260310',
+          projectId: 'northwind-analytics-dev',
           location: 'EU'
         });
     }
@@ -82,24 +82,10 @@ const bq = new BigQueryRunner();
 
 (async() => {
     const results = await bq.query(query);
-    const val = await results.data[0].revenue_fx_lead_sourcer.constructor()
-    console.log(val);
+    const val = await results.data[0].my_bignumeric;
+    const valueEndsAt = val["e"];
+    const valueLength = val["c"].length;
+    console.log(`${valueEndsAt}, ${valueLength}`);
+    const final = val["c"].slice(0, valueEndsAt + 1).join('') + '.' + val["c"].slice(valueEndsAt + 1).join('');
+    console.log(final);
 })()
-
-function rundbtAndRenderResults(
-  uri,
-  filePath,
-  dbtProjectName,
-  bigQueryRunner,
-  currentPanel,
-  fileWatcher
-) {
-  const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-  if (queryResult.status === "success") {
-    const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
-    console.log(dataWrapped);
-    vscode.window.showInformationMessage(`${queryResult.info.totalBytesProcessed / 1000000000} GB processed`);
-    currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
-    fileWatcher.dispose();
-    return;
-}
