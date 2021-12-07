@@ -7,6 +7,7 @@ const yaml = require('yaml');
 
 
 let config;
+let previousFileWatcher;
 const configPrefix = 'dbt-bigquery-preview';
 const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
@@ -38,18 +39,22 @@ function activate(context) {
 				return;
 			}
 			const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
-			// we want to create a class for this, as we want to store the state.
-			// We want to know whether a fileWatcher exists for that file. If it does,
-			// we don't need to create another one
+			
+			// the reason we do this is because we are unable to track the
+			// state of the terminal. So, if dbt compile fails we are left
+			// with a dangling fileWatcher.
+			if (previousFileWatcher) {
+				previousFileWatcher.dispose();
+			}
 			const fileWatcher = vscode.workspace.createFileSystemWatcher(
 				new vscode.RelativePattern(
 					`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf('/'))}`,
 					'**/*.sql'
 				)
 			);
+			previousFileWatcher = fileWatcher;
 
 			const terminal = selectTerminal();
-			// handle cases where dbt compile fails
 			terminal.sendText(`dbt compile -s ${fileName}`);
 			terminal.show();
 
@@ -210,13 +215,12 @@ module.exports = {
 }
 
 // to do
-// 1. Handle failed compilation on dbt compile
-// 2. Solve numeric BQ type
-// 2. give it shortcut
-// 1. Add nested option for the html
-// 2. Check how to properly split in up & bottom -> depends on handling 1.
-// 3. improve error messages
-// 4. cache existing queries
+// 1. Solve numeric BQ type
+// 2. Add nested option for the html
+// 3. give it shortcut
+// 4. Check how to properly split in up & bottom -> depends on handling 1.
+// 5. improve error messages
+// 6. cache existing queries
 // utils
 // https://github.dev/tadyjp/vscode-query-runner/src/BigQueryRunner.ts
 // https://github.dev/looker-open-source/malloy/packages/malloy-vscode/src/extension/commands/run_query_utils.ts

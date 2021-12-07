@@ -47031,6 +47031,7 @@ var resultsPanel = (init_resultsPanel(), resultsPanel_exports);
 var fs = require("fs");
 var yaml = require_yaml();
 var config;
+var previousFileWatcher;
 var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode4.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
@@ -47054,7 +47055,11 @@ function activate(context) {
         return;
       }
       const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+      if (previousFileWatcher) {
+        previousFileWatcher.dispose();
+      }
       const fileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
+      previousFileWatcher = fileWatcher;
       const terminal = selectTerminal();
       terminal.sendText(`dbt compile -s ${fileName}`);
       terminal.show();
