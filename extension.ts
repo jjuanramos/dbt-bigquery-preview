@@ -1,9 +1,8 @@
-const vscode = require('vscode');
-const bigquery = require('./src/bigquery');
-const resultsPanel = require('./src/resultsPanel');
-const fs = require('fs');
-const yaml = require('yaml');
-
+import *  as vscode from 'vscode';
+import * as bigquery from './src/bigquery';
+import * as resultsPanel from './src/resultsPanel';
+import *  as fs from 'fs';
+import *  as yaml from 'yaml';
 
 let config;
 let previousFileWatcher;
@@ -217,7 +216,9 @@ module.exports = {
 }
 
 // to do
-// 1. Rewrite to TS & give better structure
+// 1. Get wished architecture, check out book you got
+// 1. Rewrite to TS with wished architecture in mind
 // 2. improve error messages
 // 3. Write README.md
-// 4. cache existing queries
+// 4. Add tests
+// 5. cache existing queries

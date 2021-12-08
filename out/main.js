@@ -1,4 +1,9 @@
+var __create = Object.create;
 var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
 var __esm = (fn, res) => function __init() {
@@ -11,6 +16,17 @@ var __export = (target, all) => {
   __markAsModule(target);
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __reExport = (target, module2, desc) => {
+  if (module2 && typeof module2 === "object" || typeof module2 === "function") {
+    for (let key of __getOwnPropNames(module2))
+      if (!__hasOwnProp.call(target, key) && key !== "default")
+        __defProp(target, key, { get: () => module2[key], enumerable: !(desc = __getOwnPropDesc(module2, key)) || desc.enumerable });
+  }
+  return target;
+};
+var __toModule = (module2) => {
+  return __reExport(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", module2 && module2.__esModule && "default" in module2 ? { get: () => module2.default, enumerable: true } : { value: module2, enumerable: true })), module2);
 };
 var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
@@ -6890,13 +6906,13 @@ var require_ms = __commonJS({
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
-        return parse(val);
+        return parse2(val);
       } else if (type === "number" && isFinite(val)) {
         return options.long ? fmtLong(val) : fmtShort(val);
       }
       throw new Error("val is not a non-empty string or a valid number. val=" + JSON.stringify(val));
     };
-    function parse(str) {
+    function parse2(str) {
       str = String(str);
       if (str.length > 100) {
         return;
@@ -13710,7 +13726,7 @@ var require_util = __commonJS({
     };
     var _queryVariables = null;
     util.getQueryVariables = function(query) {
-      var parse = function(q) {
+      var parse2 = function(q) {
         var rval2 = {};
         var kvpairs = q.split("&");
         for (var i = 0; i < kvpairs.length; i++) {
@@ -13737,14 +13753,14 @@ var require_util = __commonJS({
       if (typeof query === "undefined") {
         if (_queryVariables === null) {
           if (typeof window !== "undefined" && window.location && window.location.search) {
-            _queryVariables = parse(window.location.search.substring(1));
+            _queryVariables = parse2(window.location.search.substring(1));
           } else {
             _queryVariables = {};
           }
         }
         rval = _queryVariables;
       } else {
-        rval = parse(query);
+        rval = parse2(query);
       }
       return rval;
     };
@@ -32606,7 +32622,7 @@ var require_parse2 = __commonJS({
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
-    function parse(uuid) {
+    function parse2(uuid) {
       if (!(0, _validate.default)(uuid)) {
         throw TypeError("Invalid UUID");
       }
@@ -32630,7 +32646,7 @@ var require_parse2 = __commonJS({
       arr[15] = v & 255;
       return arr;
     }
-    var _default = parse;
+    var _default = parse2;
     exports2.default = _default;
   }
 });
@@ -37691,7 +37707,7 @@ var require_big = __commonJS({
               }
               n = n === 0 && 1 / n < 0 ? "-0" : String(n);
             }
-            parse(x, n);
+            parse2(x, n);
           }
           x.constructor = Big2;
         }
@@ -37707,7 +37723,7 @@ var require_big = __commonJS({
         Big2.roundUp = 3;
         return Big2;
       }
-      function parse(x, n) {
+      function parse2(x, n) {
         var e, i, nl;
         if (!NUMERIC.test(n)) {
           throw Error(INVALID + "number");
@@ -41017,105 +41033,6 @@ var require_flat = __commonJS({
   }
 });
 
-// src/bigquery.js
-var bigquery_exports = {};
-__export(bigquery_exports, {
-  BigQueryRunner: () => BigQueryRunner
-});
-var vscode2, bigquery, google_auth2, flat, BigQueryRunner;
-var init_bigquery = __esm({
-  "src/bigquery.js"() {
-    vscode2 = require("vscode");
-    bigquery = require_src13();
-    google_auth2 = (init_google_auth(), google_auth_exports);
-    flat = require_flat();
-    BigQueryRunner = class {
-      constructor(config2) {
-        __publicField(this, "job", null);
-        this.config = config2;
-        this.googleAuth = new google_auth2.GoogleAuth();
-        this.client = new bigquery.BigQuery({
-          userAgent: "dbt-bigquery-preview",
-          projectId: !!this.config.get("projectId") ? this.config.get("projectId") : void 0,
-          location: !!this.config.get("location") ? this.config.get("location") : void 0
-        });
-      }
-      setConfig(config2) {
-        this.config = config2;
-      }
-      getAuthorizeUrl() {
-        return this.googleAuth.getAuthorizeUrl();
-      }
-      setRefreshClient(authCode) {
-        return __async(this, null, function* () {
-          const refreshClient = yield this.googleAuth.setRefreshClient(authCode);
-          this.client.authClient.cachedCredential = refreshClient;
-        });
-      }
-      query(queryText, isDryRun) {
-        return __async(this, null, function* () {
-          let data;
-          try {
-            data = yield this.client.createQueryJob({
-              query: queryText,
-              dryRun: !!isDryRun
-            });
-          } catch (err) {
-            vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
-            return;
-          }
-          this.job = data[0];
-          if (!this.job) {
-            vscode2.window.showErrorMessage(`No job was found`);
-            return;
-          }
-          let result;
-          try {
-            result = yield this.job.getQueryResults({
-              autoPaginate: true
-            });
-          } catch (err) {
-            vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
-            return;
-          }
-          try {
-            return yield this.processResults(result[0]);
-          } catch (err) {
-            vscode2.window.showErrorMessage(`Failed to get results: ${err}`);
-            return;
-          }
-        });
-      }
-      processResults(rows) {
-        return __async(this, null, function* () {
-          if (!this.job) {
-            vscode2.window.showErrorMessage(`No job was found`);
-            return;
-          }
-          const metadata = (yield this.job.getMetadata())[0];
-          return {
-            status: "success",
-            info: {
-              projectId: metadata.jobReference.projectId,
-              jobId: metadata.id,
-              location: this.job.location,
-              jobLink: metadata.selfLink,
-              creationTime: metadata.statistics.creationTime,
-              startTime: metadata.statistics.startTime,
-              endTime: metadata.statistics.endTime,
-              userEmail: metadata.user_email,
-              totalBytesProcessed: metadata.statistics.totalBytesProcessed,
-              status: metadata.status.state
-            },
-            data: rows,
-            detail: JSON.stringify(metadata.statistics, null, "  ")
-          };
-        });
-      }
-    };
-  }
-});
-
 // src/html.js
 var html_exports = {};
 __export(html_exports, {
@@ -41293,59 +41210,6 @@ var init_html = __esm({
           }
         }
         return htmlData;
-      }
-    };
-  }
-});
-
-// src/resultsPanel.js
-var resultsPanel_exports = {};
-__export(resultsPanel_exports, {
-  ResultsPanel: () => ResultsPanel
-});
-var vscode3, htmlWrapper, ResultsPanel;
-var init_resultsPanel = __esm({
-  "src/resultsPanel.js"() {
-    vscode3 = require("vscode");
-    htmlWrapper = (init_html(), html_exports);
-    ResultsPanel = class {
-      constructor(extensionUri) {
-        this._panel;
-        this._disposables = [];
-        this.viewType = "dbt-bigquery-preview";
-        this.title = "Preview dbt";
-        this._extensionUri = extensionUri;
-      }
-      createOrUpdateDataWrappedPanel(queryData) {
-        if (this._panel) {
-          this._update(queryData);
-        } else {
-          const panel = vscode3.window.createWebviewPanel(this.viewType, this.title, vscode3.ViewColumn.Two, {
-            enableScripts: true
-          });
-          this._panel = panel;
-          this._update(queryData);
-          this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-        }
-      }
-      _update(queryData) {
-        const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "media", "script.js");
-        const scriptUri = scriptPath.with({ "scheme": "vscode-resource" });
-        const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
-        const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
-        const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
-        console.log(htmlWithData);
-        this._panel.webview.html = htmlWithData;
-      }
-      dispose() {
-        this._panel.dispose();
-        this._panel = void 0;
-        while (this._disposables.length) {
-          const x = this._disposables.pop();
-          if (x) {
-            x.dispose();
-          }
-        }
       }
     };
   }
@@ -43413,7 +43277,7 @@ var require_parse_cst = __commonJS({
         };
       }
     };
-    function parse(src) {
+    function parse2(src) {
       const cr = [];
       if (src.indexOf("\r") !== -1) {
         src = src.replace(/\r\n?/g, (match, offset2) => {
@@ -43447,7 +43311,7 @@ var require_parse_cst = __commonJS({
       documents.toString = () => documents.join("...\n");
       return documents;
     }
-    exports2.parse = parse;
+    exports2.parse = parse2;
   }
 });
 
@@ -46949,7 +46813,7 @@ var require_dist5 = __commonJS({
       }
       return doc;
     }
-    function parse(src, options) {
+    function parse2(src, options) {
       const doc = parseDocument(src, options);
       doc.warnings.forEach((warning) => warnings.warn(warning));
       if (doc.errors.length > 0)
@@ -46965,7 +46829,7 @@ var require_dist5 = __commonJS({
       createNode,
       defaultOptions: Document$1.defaultOptions,
       Document,
-      parse,
+      parse: parse2,
       parseAllDocuments,
       parseCST: parseCst.parse,
       parseDocument,
@@ -46983,21 +46847,154 @@ var require_yaml = __commonJS({
   }
 });
 
-// extension.js
-var vscode4 = require("vscode");
-var bigquery2 = (init_bigquery(), bigquery_exports);
-var resultsPanel = (init_resultsPanel(), resultsPanel_exports);
-var fs = require("fs");
-var yaml = require_yaml();
+// extension.ts
+var vscode4 = __toModule(require("vscode"));
+
+// src/bigquery.js
+var vscode2 = require("vscode");
+var bigquery = require_src13();
+var google_auth2 = (init_google_auth(), google_auth_exports);
+var flat = require_flat();
+var BigQueryRunner = class {
+  constructor(config2) {
+    __publicField(this, "job", null);
+    this.config = config2;
+    this.googleAuth = new google_auth2.GoogleAuth();
+    this.client = new bigquery.BigQuery({
+      userAgent: "dbt-bigquery-preview",
+      projectId: !!this.config.get("projectId") ? this.config.get("projectId") : void 0,
+      location: !!this.config.get("location") ? this.config.get("location") : void 0
+    });
+  }
+  setConfig(config2) {
+    this.config = config2;
+  }
+  getAuthorizeUrl() {
+    return this.googleAuth.getAuthorizeUrl();
+  }
+  setRefreshClient(authCode) {
+    return __async(this, null, function* () {
+      const refreshClient = yield this.googleAuth.setRefreshClient(authCode);
+      this.client.authClient.cachedCredential = refreshClient;
+    });
+  }
+  query(queryText, isDryRun) {
+    return __async(this, null, function* () {
+      let data;
+      try {
+        data = yield this.client.createQueryJob({
+          query: queryText,
+          dryRun: !!isDryRun
+        });
+      } catch (err) {
+        vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
+        return;
+      }
+      this.job = data[0];
+      if (!this.job) {
+        vscode2.window.showErrorMessage(`No job was found`);
+        return;
+      }
+      let result;
+      try {
+        result = yield this.job.getQueryResults({
+          autoPaginate: true
+        });
+      } catch (err) {
+        vscode2.window.showErrorMessage(`Failed to query BigQuery: ${err}`);
+        return;
+      }
+      try {
+        return yield this.processResults(result[0]);
+      } catch (err) {
+        vscode2.window.showErrorMessage(`Failed to get results: ${err}`);
+        return;
+      }
+    });
+  }
+  processResults(rows) {
+    return __async(this, null, function* () {
+      if (!this.job) {
+        vscode2.window.showErrorMessage(`No job was found`);
+        return;
+      }
+      const metadata = (yield this.job.getMetadata())[0];
+      return {
+        status: "success",
+        info: {
+          projectId: metadata.jobReference.projectId,
+          jobId: metadata.id,
+          location: this.job.location,
+          jobLink: metadata.selfLink,
+          creationTime: metadata.statistics.creationTime,
+          startTime: metadata.statistics.startTime,
+          endTime: metadata.statistics.endTime,
+          userEmail: metadata.user_email,
+          totalBytesProcessed: metadata.statistics.totalBytesProcessed,
+          status: metadata.status.state
+        },
+        data: rows,
+        detail: JSON.stringify(metadata.statistics, null, "  ")
+      };
+    });
+  }
+};
+
+// src/resultsPanel.js
+var vscode3 = require("vscode");
+var htmlWrapper = (init_html(), html_exports);
+var ResultsPanel = class {
+  constructor(extensionUri) {
+    this._panel;
+    this._disposables = [];
+    this.viewType = "dbt-bigquery-preview";
+    this.title = "Preview dbt";
+    this._extensionUri = extensionUri;
+  }
+  createOrUpdateDataWrappedPanel(queryData) {
+    if (this._panel) {
+      this._update(queryData);
+    } else {
+      const panel = vscode3.window.createWebviewPanel(this.viewType, this.title, vscode3.ViewColumn.Two, {
+        enableScripts: true
+      });
+      this._panel = panel;
+      this._update(queryData);
+      this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    }
+  }
+  _update(queryData) {
+    const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "media", "script.js");
+    const scriptUri = scriptPath.with({ "scheme": "vscode-resource" });
+    const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
+    const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
+    const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
+    this._panel.webview.html = htmlWithData;
+  }
+  dispose() {
+    this._panel.dispose();
+    this._panel = void 0;
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
+    }
+  }
+};
+
+// extension.ts
+var fs = __toModule(require("fs"));
+var yaml = __toModule(require_yaml());
 var config;
 var previousFileWatcher;
 var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode4.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
-  let currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
+  let currentPanel = new ResultsPanel(context.extensionUri);
   const dbtProjectName = getDbtProjectName(workspacePath);
-  const bigQueryRunner = new bigquery2.BigQueryRunner(config);
+  const bigQueryRunner = new BigQueryRunner(config);
   context.subscriptions.push(vscode4.workspace.onDidChangeConfiguration((event) => {
     if (!event.affectsConfiguration(configPrefix)) {
       return;
