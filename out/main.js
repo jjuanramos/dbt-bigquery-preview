@@ -41129,12 +41129,12 @@ var init_html = __esm({
         this.data = data;
         this.columnNames = Object.keys(data[0]);
       }
-      getDataWrapped() {
+      getDataWrapped(scriptUri, stylesUri) {
         const htmlData = this.wrapDataInHTML();
-        const dataWrapped = this.createHTMLTemplate(htmlData);
+        const dataWrapped = this.createHTMLTemplate(htmlData, scriptUri, stylesUri);
         return dataWrapped;
       }
-      createHTMLTemplate(table) {
+      createHTMLTemplate(table, scriptUri, stylesUri) {
         return `<!DOCTYPE html>
         <html lang="en">
 
@@ -41142,78 +41142,9 @@ var init_html = __esm({
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Preview dbt</title>
-            <style>               
-            html {
-            font-family: sans-serif;
-            }
+            <link href="${stylesUri}" rel="stylesheet">
 
-            .content {
-            display: none;
-            overflow: hidden;
-            }
-
-            table {
-            border-collapse: collapse;
-            border: 2px solid rgb(200,200,200);
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            }
-
-            td, th {
-            border: 1px solid rgb(190,190,190);
-            padding: 10px 20px;
-            }
-
-            th {
-            background-color: rgb(235,235,235);
-            }
-
-            td {
-            text-align: center;
-            }
-
-            .even {
-            background-color: rgb(250,250,250);
-            }
-
-            .odd {
-            background-color: rgb(245,245,245);
-            }
-
-            caption {
-            padding: 10px;
-            }
-
-            .collapsible {
-                font-style: italic;
-            }
-    
-            .active .collapsible:hover {
-                font-size: 1rem;
-            }
-    
-            .content {
-                font-size: 1rem;
-                display: none;
-            }
-            </style>
-
-            <script>
-            const coll = document.getElementsByClassName("collapsible");
-            console.log(coll)
-            for (let i = 0; i < coll.length; i++) {
-                coll[i].addEventListener("click", function () {
-                    console.log("HEY!")
-                    this.classList.toggle("active");
-                    const content = this.nextElementSibling;
-                    if (content.style.display === "block") {
-                        content.style.display = "none";
-                    } else {
-                        content.style.display = "block";
-                    }
-                });
-            }
-            <\/script>
+            <script src='${scriptUri}' defer><\/script>
         </head>
 
         <body style="padding: 10px;">
@@ -41249,9 +41180,19 @@ var init_html = __esm({
                 columnContent = "";
               }
               content += `
-                ${columnName}: ${jsObject[columnName]},<br>
+                ${columnName}: ${jsObject[columnName]},<br><br>
                 `;
             }
+            content = `
+            <div class="collapsible">
+                <p>
+                    { ... }
+                </p>
+            </div>
+            <div class="content">
+                <br>
+                ${content}
+            </div>`;
           }
         }
         return `
@@ -41367,11 +41308,12 @@ var init_resultsPanel = __esm({
     vscode3 = require("vscode");
     htmlWrapper = (init_html(), html_exports);
     ResultsPanel = class {
-      constructor() {
+      constructor(extensionUri) {
         this._panel;
         this._disposables = [];
         this.viewType = "dbt-bigquery-preview";
         this.title = "Preview dbt";
+        this._extensionUri = extensionUri;
       }
       createOrUpdateDataWrappedPanel(queryData) {
         if (this._panel) {
@@ -41386,8 +41328,13 @@ var init_resultsPanel = __esm({
         }
       }
       _update(queryData) {
-        const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped();
-        this._panel.webview.html = dataWrapped;
+        const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "media", "script.js");
+        const scriptUri = scriptPath.with({ "scheme": "vscode-resource" });
+        const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
+        const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
+        const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
+        console.log(htmlWithData);
+        this._panel.webview.html = htmlWithData;
       }
       dispose() {
         this._panel.dispose();
@@ -47047,7 +46994,7 @@ var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode4.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
-  let currentPanel = new resultsPanel.ResultsPanel();
+  let currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
   const dbtProjectName = getDbtProjectName(workspacePath);
   const bigQueryRunner = new bigquery2.BigQueryRunner(config);
   context.subscriptions.push(vscode4.workspace.onDidChangeConfiguration((event) => {
@@ -47075,10 +47022,10 @@ function activate(context) {
       terminal.sendText(`dbt compile -s ${fileName}`);
       terminal.show();
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher);
+        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher, terminal);
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher);
+        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher, terminal);
       }));
     } catch (e) {
       vscode4.window.showErrorMessage(e);
@@ -47086,7 +47033,7 @@ function activate(context) {
   }));
   context.subscriptions.push(disposable);
 }
-function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher) {
+function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher, terminal) {
   return __async(this, null, function* () {
     vscode4.window.withProgress({
       location: vscode4.ProgressLocation.Notification,
@@ -47107,6 +47054,7 @@ function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, c
           }
           vscode4.window.showInformationMessage(`${bytesMessage} processed`);
           currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
+          terminal.hide();
           fileWatcher.dispose();
           return;
         } else {

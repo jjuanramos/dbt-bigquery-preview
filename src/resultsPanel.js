@@ -2,11 +2,12 @@ const vscode = require('vscode');
 const htmlWrapper = require('./html.js');
 
 export class ResultsPanel {
-    constructor() {
+    constructor(extensionUri) {
         this._panel;
         this._disposables = [];
         this.viewType = "dbt-bigquery-preview";
         this.title = "Preview dbt";
+        this._extensionUri = extensionUri;
     }
 
     createOrUpdateDataWrappedPanel(queryData) {
@@ -30,8 +31,15 @@ export class ResultsPanel {
 
     // add styles.css and scripts.js to update here
     _update(queryData) {
-        const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped();
-        this._panel.webview.html = dataWrapped;
+        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'script.js');
+        const scriptUri = scriptPath.with({ 'scheme': 'vscode-resource'});
+
+        const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css');
+		const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
+
+        const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
+        console.log(htmlWithData);
+        this._panel.webview.html = htmlWithData;
     }
 
     dispose() {

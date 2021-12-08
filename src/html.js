@@ -1,16 +1,16 @@
 export class HTMLResultsWrapper {
   constructor(data) {
       this.data = data;
-      this.columnNames = Object.keys(data[0])
+      this.columnNames = Object.keys(data[0]);
   }
 
-  getDataWrapped() {
+  getDataWrapped(scriptUri, stylesUri) {
       const htmlData = this.wrapDataInHTML();
-      const dataWrapped = this.createHTMLTemplate(htmlData);
+      const dataWrapped = this.createHTMLTemplate(htmlData, scriptUri, stylesUri);
       return dataWrapped;
   }
 
-  createHTMLTemplate(table) {
+  createHTMLTemplate(table, scriptUri, stylesUri) {
         return `<!DOCTYPE html>
         <html lang="en">
 
@@ -18,78 +18,9 @@ export class HTMLResultsWrapper {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Preview dbt</title>
-            <style>               
-            html {
-            font-family: sans-serif;
-            }
+            <link href="${stylesUri}" rel="stylesheet">
 
-            .content {
-            display: none;
-            overflow: hidden;
-            }
-
-            table {
-            border-collapse: collapse;
-            border: 2px solid rgb(200,200,200);
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            }
-
-            td, th {
-            border: 1px solid rgb(190,190,190);
-            padding: 10px 20px;
-            }
-
-            th {
-            background-color: rgb(235,235,235);
-            }
-
-            td {
-            text-align: center;
-            }
-
-            .even {
-            background-color: rgb(250,250,250);
-            }
-
-            .odd {
-            background-color: rgb(245,245,245);
-            }
-
-            caption {
-            padding: 10px;
-            }
-
-            .collapsible {
-                font-style: italic;
-            }
-    
-            .active .collapsible:hover {
-                font-size: 1rem;
-            }
-    
-            .content {
-                font-size: 1rem;
-                display: none;
-            }
-            </style>
-
-            <script>
-            const coll = document.getElementsByClassName("collapsible");
-            console.log(coll)
-            for (let i = 0; i < coll.length; i++) {
-                coll[i].addEventListener("click", function () {
-                    console.log("HEY!")
-                    this.classList.toggle("active");
-                    const content = this.nextElementSibling;
-                    if (content.style.display === "block") {
-                        content.style.display = "none";
-                    } else {
-                        content.style.display = "block";
-                    }
-                });
-            }
-            </script>
+            <script src='${scriptUri}' defer></script>
         </head>
 
         <body style="padding: 10px;">
@@ -131,18 +62,19 @@ export class HTMLResultsWrapper {
                     columnContent = "";
                 }
                 content += `
-                ${columnName}: ${jsObject[columnName]},<br>
+                ${columnName}: ${jsObject[columnName]},<br><br>
                 `;
             }
-            // content = `
-            // <div class="collapsible">
-            //     <p>
-            //         { ... }
-            //     </p>
-            // </div>
-            // <div class="content">
-            //     ${content}
-            // </div>`;
+            content = `
+            <div class="collapsible">
+                <p>
+                    { ... }
+                </p>
+            </div>
+            <div class="content">
+                <br>
+                ${content}
+            </div>`;
           }
       }
       return `
@@ -191,8 +123,8 @@ export class HTMLResultsWrapper {
                   if (content === undefined || content === null) {
                       htmlRow += `<td></td>`;
                   } else if (content instanceof Object && Array.isArray(content) == false) {
-                  const htmlContent = this.wrapJSObject(content);
-                  htmlRow += htmlContent;
+                    const htmlContent = this.wrapJSObject(content);
+                    htmlRow += htmlContent;
                   } else {
                       htmlRow += `<td>${content}</td>`;
                   }

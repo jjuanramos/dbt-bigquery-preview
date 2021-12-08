@@ -12,7 +12,7 @@ const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
 function activate(context) {
 	readConfig();
-	let currentPanel = new resultsPanel.ResultsPanel();
+	let currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
 
 	// add onDidChangeFile to update dbt project name if it changes
 	const dbtProjectName = getDbtProjectName(workspacePath);
@@ -64,7 +64,8 @@ function activate(context) {
 					dbtProjectName,
 					bigQueryRunner,
 					currentPanel,
-					fileWatcher
+					fileWatcher,
+					terminal
 				);
 			});
 
@@ -75,7 +76,8 @@ function activate(context) {
 					dbtProjectName,
 					bigQueryRunner,
 					currentPanel,
-					fileWatcher
+					fileWatcher,
+					terminal
 				);
 			});
 
@@ -93,7 +95,8 @@ async function rundbtAndRenderResults(
 	dbtProjectName,
 	bigQueryRunner,
 	currentPanel,
-	fileWatcher
+	fileWatcher,
+	terminal
   ) {
 	vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
@@ -114,6 +117,7 @@ async function rundbtAndRenderResults(
 				}
 				vscode.window.showInformationMessage(`${bytesMessage} processed`);
 				currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
+				terminal.hide();
 				fileWatcher.dispose();
 				return;
 			} else {
