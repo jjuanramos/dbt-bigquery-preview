@@ -41147,7 +41147,7 @@ var init_html = __esm({
             <script src='${scriptUri}' defer><\/script>
         </head>
 
-        <body style="padding: 10px;">
+        <body>
             <table>${table}</table>
         </body>
 
@@ -41201,10 +41201,10 @@ var init_html = __esm({
       </td>
       `;
       }
-      createHTMLHeader() {
-        let htmlHeader = "<tr><td></td>";
+      createHTMLHeader(rowStyle) {
+        let htmlHeader = `<tr class="${rowStyle} header"><th></th>`;
         for (const name of this.columnNames) {
-          htmlHeader += `<td>${name}</td>`;
+          htmlHeader += `<th>${name}</th>`;
         }
         ;
         htmlHeader += "</tr>";
@@ -41224,9 +41224,9 @@ var init_html = __esm({
         let htmlRow = "";
         for (let subrow = 0; subrow < maximumLength; subrow++) {
           if (subrow === 0) {
-            htmlRow += `<tr><td>${pos + 1}</td>`;
+            htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
           } else {
-            htmlRow += `<tr><td></td>`;
+            htmlRow += `<tr class="${rowStyle}"><td></td>`;
           }
           for (const name of this.columnNames) {
             if (arrayColumnNames.includes(name)) {
@@ -41253,7 +41253,7 @@ var init_html = __esm({
         return htmlRow;
       }
       getHTMLforRow(row, pos, arrayColumnNames, rowStyle) {
-        let htmlRow = `<tr><td>${pos + 1}</td>`;
+        let htmlRow = `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
         for (const name of this.columnNames) {
           if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
             const htmlContent = this.wrapJSObject(row[name]);
@@ -41267,9 +41267,10 @@ var init_html = __esm({
       }
       wrapDataInHTML() {
         ;
-        let htmlData = this.createHTMLHeader();
+        let rowStyle = "even";
+        let htmlData = this.createHTMLHeader(rowStyle);
         const arrayColumnNames = this.getArrayColumnNames();
-        let rowStyle = "odd";
+        rowStyle = "odd";
         for (let pos = 0; pos < this.data.length; pos++) {
           const row = this.data[pos];
           if (arrayColumnNames.length > 0) {

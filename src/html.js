@@ -23,7 +23,7 @@ export class HTMLResultsWrapper {
             <script src='${scriptUri}' defer></script>
         </head>
 
-        <body style="padding: 10px;">
+        <body>
             <table>${table}</table>
         </body>
 
@@ -84,10 +84,10 @@ export class HTMLResultsWrapper {
       `;
   }
 
-  createHTMLHeader() {
-      let htmlHeader = '<tr><td></td>';
+  createHTMLHeader(rowStyle) {
+      let htmlHeader = `<tr class="${rowStyle} header"><th></th>`;
       for (const name of this.columnNames) {
-          htmlHeader += `<td>${name}</td>`;
+          htmlHeader += `<th>${name}</th>`;
       };
       htmlHeader += '</tr>';
 
@@ -111,10 +111,10 @@ export class HTMLResultsWrapper {
       for (let subrow = 0; subrow < maximumLength; subrow++) {
           if (subrow === 0) {
             //   htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
-              htmlRow += `<tr><td>${pos + 1}</td>`;
+              htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
             } else {
             //   htmlRow += `<tr class="${rowStyle}"><td></td>`;
-              htmlRow += `<tr><td></td>`;
+              htmlRow += `<tr class="${rowStyle}"><td></td>`;
           }
 
           for (const name of this.columnNames) {
@@ -147,7 +147,7 @@ export class HTMLResultsWrapper {
 
   getHTMLforRow(row, pos, arrayColumnNames,rowStyle) {
     //   let htmlRow = `<tr class="${rowStyle}><td>${pos + 1}</td>`;
-      let htmlRow = `<tr><td>${pos + 1}</td>`;
+      let htmlRow = `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
       for (const name of this.columnNames) {
           if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
               const htmlContent = this.wrapJSObject(row[name]);
@@ -162,10 +162,12 @@ export class HTMLResultsWrapper {
   }
 
   wrapDataInHTML() {;
-      let htmlData = this.createHTMLHeader();
+      let rowStyle = "even";
+      let htmlData = this.createHTMLHeader(rowStyle);
       const arrayColumnNames = this.getArrayColumnNames();
 
-      let rowStyle = "odd";
+
+      rowStyle = "odd";
       for (let pos = 0; pos < this.data.length; pos++) {
           const row = this.data[pos];
 

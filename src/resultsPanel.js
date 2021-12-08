@@ -38,7 +38,6 @@ export class ResultsPanel {
 		const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
 
         const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
-        console.log(htmlWithData);
         this._panel.webview.html = htmlWithData;
     }
 
