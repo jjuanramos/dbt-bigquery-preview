@@ -41361,10 +41361,11 @@ var resultsPanel_exports = {};
 __export(resultsPanel_exports, {
   ResultsPanel: () => ResultsPanel
 });
-var vscode3, ResultsPanel;
+var vscode3, htmlWrapper, ResultsPanel;
 var init_resultsPanel = __esm({
   "src/resultsPanel.js"() {
     vscode3 = require("vscode");
+    htmlWrapper = (init_html(), html_exports);
     ResultsPanel = class {
       constructor() {
         this._panel;
@@ -41372,19 +41373,20 @@ var init_resultsPanel = __esm({
         this.viewType = "dbt-bigquery-preview";
         this.title = "Preview dbt";
       }
-      createOrUpdateDataWrappedPanel(dataWrapped) {
+      createOrUpdateDataWrappedPanel(queryData) {
         if (this._panel) {
-          this._update(dataWrapped);
+          this._update(queryData);
         } else {
           const panel = vscode3.window.createWebviewPanel(this.viewType, this.title, vscode3.ViewColumn.Two, {
             enableScripts: true
           });
           this._panel = panel;
-          this._update(dataWrapped);
+          this._update(queryData);
           this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         }
       }
-      _update(dataWrapped) {
+      _update(queryData) {
+        const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped();
         this._panel.webview.html = dataWrapped;
       }
       dispose() {
@@ -47036,7 +47038,6 @@ var require_yaml = __commonJS({
 // extension.js
 var vscode4 = require("vscode");
 var bigquery2 = (init_bigquery(), bigquery_exports);
-var htmlWrapper = (init_html(), html_exports);
 var resultsPanel = (init_resultsPanel(), resultsPanel_exports);
 var fs = require("fs");
 var yaml = require_yaml();
@@ -47095,7 +47096,6 @@ function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, c
       try {
         const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
         if (queryResult.status === "success") {
-          const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
           const totalBytes = queryResult.info.totalBytesProcessed;
           let bytesMessage;
           if (totalBytes / 1073741824 >= 1) {
@@ -47106,7 +47106,7 @@ function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, c
             bytesMessage = `${totalBytes} bytes`;
           }
           vscode4.window.showInformationMessage(`${bytesMessage} processed`);
-          currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+          currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
           fileWatcher.dispose();
           return;
         } else {

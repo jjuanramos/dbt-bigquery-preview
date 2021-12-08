@@ -1,6 +1,5 @@
 const vscode = require('vscode');
 const bigquery = require('./src/bigquery');
-const htmlWrapper = require('./src/html');
 const resultsPanel = require('./src/resultsPanel');
 const fs = require('fs');
 const yaml = require('yaml');
@@ -104,7 +103,6 @@ async function rundbtAndRenderResults(
 		try {
 			const queryResult = await getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
 			if (queryResult.status === "success") {
-				const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryResult.data).getDataWrapped();
 				const totalBytes = queryResult.info.totalBytesProcessed;
 				let bytesMessage;
 				if (totalBytes / 1073741824 >= 1) {
@@ -115,7 +113,7 @@ async function rundbtAndRenderResults(
 					bytesMessage = `${totalBytes} bytes`;
 				}
 				vscode.window.showInformationMessage(`${bytesMessage} processed`);
-				currentPanel.createOrUpdateDataWrappedPanel(dataWrapped);
+				currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
 				fileWatcher.dispose();
 				return;
 			} else {

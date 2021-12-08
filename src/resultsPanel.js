@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const htmlWrapper = require('./html.js');
 
 export class ResultsPanel {
     constructor() {
@@ -8,13 +9,9 @@ export class ResultsPanel {
         this.title = "Preview dbt";
     }
 
-    createOrUpdateDataWrappedPanel(dataWrapped) {
-        // const column = vscode.window.activeTextEditor
-        //     ? vscode.window.activeTextEditor.viewColumn
-        //     : undefined;
-
+    createOrUpdateDataWrappedPanel(queryData) {
         if (this._panel) {
-            this._update(dataWrapped);
+            this._update(queryData);
         } else {
             const panel = vscode.window.createWebviewPanel(
                 this.viewType,
@@ -25,13 +22,15 @@ export class ResultsPanel {
                 }
             )
             this._panel = panel;
-            this._update(dataWrapped);
+            this._update(queryData);
             this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         }
 
     }
 
-    _update(dataWrapped) {
+    // add styles.css and scripts.js to update here
+    _update(queryData) {
+        const dataWrapped = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped();
         this._panel.webview.html = dataWrapped;
     }
 
