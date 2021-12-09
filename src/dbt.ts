@@ -50,7 +50,7 @@ export class DbtRunner {
         return compiledFilePath;
     }
 
-    getCompiledQuery(compiledFilePath: string): string {
+    getCompiledQuery(): string {
         const compiledQuery = fs.readFileSync(this.compiledFilePath, 'utf-8');
         return compiledQuery + ' limit 100';
     }
@@ -91,7 +91,7 @@ export class DbtRunner {
     async getDbtQueryResults(uri: vscode.Uri) {
         const compiledFilePath = this.getCompiledPath();
         if (uri.toString().includes(compiledFilePath)) {
-            const compiledQuery = this.getCompiledQuery(compiledFilePath);
+            const compiledQuery = this.getCompiledQuery();
             const queryResult = await this.bigQueryRunner.query(compiledQuery);
             return queryResult;
         }
