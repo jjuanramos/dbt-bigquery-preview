@@ -46964,7 +46964,7 @@ var ResultsPanel = class {
     }
   }
   _update(queryData) {
-    const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "media", "script.js");
+    const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "media", "collapsible.js");
     const scriptUri = scriptPath.with({ "scheme": "vscode-resource" });
     const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
     const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
@@ -47020,7 +47020,7 @@ var DbtRunner = class {
     this.compiledFilePath = compiledFilePath;
     return compiledFilePath;
   }
-  getCompiledQuery(compiledFilePath) {
+  getCompiledQuery() {
     const compiledQuery = fs.readFileSync(this.compiledFilePath, "utf-8");
     return compiledQuery + " limit 100";
   }
@@ -47058,7 +47058,7 @@ var DbtRunner = class {
     return __async(this, null, function* () {
       const compiledFilePath = this.getCompiledPath();
       if (uri.toString().includes(compiledFilePath)) {
-        const compiledQuery = this.getCompiledQuery(compiledFilePath);
+        const compiledQuery = this.getCompiledQuery();
         const queryResult = yield this.bigQueryRunner.query(compiledQuery);
         return queryResult;
       }

@@ -31,7 +31,7 @@ export class ResultsPanel {
 
     // add styles.css and scripts.js to update here
     _update(queryData) {
-        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'script.js');
+        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'collapsible.js');
         const scriptUri = scriptPath.with({ 'scheme': 'vscode-resource'});
 
         const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css');
