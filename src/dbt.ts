@@ -18,6 +18,10 @@ export class DbtRunner {
         this.bigQueryRunner = bigQueryRunner;
     }
 
+    setConfig(config: vscode.WorkspaceConfiguration) {
+        this.bigQueryRunner.setConfig(config);
+    }
+
     getDbtProjectName(workspacePath: string): string {
         try {
             const file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, 'utf-8');
@@ -116,7 +120,7 @@ export class DbtRunner {
                         bytesMessage = `${totalBytes} bytes`;
                     }
                     vscode.window.showInformationMessage(`${bytesMessage} processed`);
-                    currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
+                    currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
                     this.terminal.hide();
                     fileWatcher.dispose();
                     return;
@@ -130,6 +134,4 @@ export class DbtRunner {
             }
         });
     }
-
-
 }

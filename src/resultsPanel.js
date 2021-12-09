@@ -10,7 +10,7 @@ export class ResultsPanel {
         this._extensionUri = extensionUri;
     }
 
-    createOrUpdateDataWrappedPanel(queryData) {
+    createOrUpdateDataHTMLPanel(queryData) {
         if (this._panel) {
             this._update(queryData);
         } else {

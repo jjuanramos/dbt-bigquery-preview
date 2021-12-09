@@ -1,22 +1,20 @@
 import *  as vscode from 'vscode';
-import *  as fs from 'fs';
-import *  as yaml from 'yaml';
 
 import * as bigquery from './src/bigquery';
 import * as resultsPanel from './src/resultsPanel';
 import * as dbt from './src/dbt';
 
-let config;
-let previousFileWatcher;
+let config: vscode.WorkspaceConfiguration;
+let previousFileWatcher: vscode.FileSystemWatcher;
 const configPrefix = 'dbt-bigquery-preview';
 const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
 function activate(context) {
 	readConfig();
-	let currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
 
 	const bigQueryRunner = new bigquery.BigQueryRunner(config);
 	const dbtRunner = new dbt.DbtRunner(workspacePath, bigQueryRunner);
+	const currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
 
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(event => {
@@ -25,7 +23,7 @@ function activate(context) {
 			}
 
 			readConfig();
-			bigQueryRunner.setConfig(config);
+			dbtRunner.setConfig(config);
 		})
 	);
 
@@ -96,8 +94,7 @@ module.exports = {
 }
 
 // to do
-// 1. Get wished architecture, check out book you got
-// 1. Rewrite to TS with wished architecture in mind
+// 1. Rewrite to TS with wished architecture in mind. Next goes BQ.js
 // 2. improve error messages
 // 3. Write README.md
 // 4. Add tests
