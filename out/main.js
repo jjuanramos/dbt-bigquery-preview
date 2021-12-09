@@ -46848,7 +46848,7 @@ var require_yaml = __commonJS({
 });
 
 // extension.ts
-var vscode4 = __toModule(require("vscode"));
+var vscode5 = __toModule(require("vscode"));
 
 // src/bigquery.js
 var vscode2 = require("vscode");
@@ -46983,157 +46983,173 @@ var ResultsPanel = class {
   }
 };
 
-// extension.ts
+// src/dbt.ts
+var vscode4 = __toModule(require("vscode"));
 var fs = __toModule(require("fs"));
 var yaml = __toModule(require_yaml());
+var DbtRunner = class {
+  constructor(workspacePath2, bigQueryRunner) {
+    this.dbtProjectName = this.getDbtProjectName(workspacePath2);
+    this.bigQueryRunner = bigQueryRunner;
+  }
+  getDbtProjectName(workspacePath2) {
+    try {
+      const file = fs.readFileSync(`${workspacePath2}/dbt_project.yml`, "utf-8");
+      const parsedFile = yaml.parse(file);
+      const dbtProjectName = parsedFile.name;
+      return dbtProjectName;
+    } catch (e) {
+      vscode4.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
+    }
+  }
+  getFileName(filePath) {
+    const lastIndex = filePath.lastIndexOf("/");
+    if (lastIndex === -1) {
+      vscode4.window.showErrorMessage("File not found");
+      return;
+    } else {
+      const fileName = filePath.slice(lastIndex + 1, filePath.length).replace(".sql", "");
+      this.filePath = filePath;
+      this.fileName = fileName;
+      return fileName;
+    }
+  }
+  getCompiledPath() {
+    const filePathSplitted = this.filePath.split("/models/");
+    const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/models/${filePathSplitted[1]}`;
+    this.compiledFilePath = compiledFilePath;
+    return compiledFilePath;
+  }
+  getCompiledQuery(compiledFilePath) {
+    const compiledQuery = fs.readFileSync(this.compiledFilePath, "utf-8");
+    return compiledQuery + " limit 100";
+  }
+  selectTerminal() {
+    let terminalExists = false;
+    if (vscode4.window.terminals.length === 0) {
+      const terminal = vscode4.window.createTerminal("dbt-bigquery-preview");
+      return terminal;
+    }
+    const terminals = vscode4.window.terminals;
+    const items = terminals.map((t) => {
+      return {
+        label: `${t.name}`,
+        terminal: t
+      };
+    });
+    for (const item of items) {
+      if (item.label === "dbt-bigquery-preview") {
+        terminalExists = true;
+        return item.terminal;
+      }
+    }
+    if (!terminalExists) {
+      const terminal = vscode4.window.createTerminal("dbt-bigquery-preview");
+      return terminal;
+    }
+  }
+  compileDbtAndShowTerminal() {
+    const terminal = this.selectTerminal();
+    this.terminal = terminal;
+    terminal.sendText(`dbt compile -s ${this.fileName}`);
+    terminal.show();
+  }
+  getDbtQueryResults(uri) {
+    return __async(this, null, function* () {
+      const compiledFilePath = this.getCompiledPath();
+      if (uri.toString().includes(compiledFilePath)) {
+        const compiledQuery = this.getCompiledQuery(compiledFilePath);
+        const queryResult = yield this.bigQueryRunner.query(compiledQuery);
+        return queryResult;
+      }
+    });
+  }
+  runDbtAndRenderResults(uri, currentPanel, fileWatcher) {
+    return __async(this, null, function* () {
+      vscode4.window.withProgress({
+        location: vscode4.ProgressLocation.Notification,
+        cancellable: true,
+        title: "Waiting for BigQuery to run the code..."
+      }, () => __async(this, null, function* () {
+        try {
+          const queryResult = yield this.getDbtQueryResults(uri);
+          if (queryResult.status === "success") {
+            const totalBytes = queryResult.info.totalBytesProcessed;
+            let bytesMessage;
+            if (totalBytes / 1073741824 >= 1) {
+              bytesMessage = `${totalBytes / 1073741824} GB`;
+            } else if (totalBytes / 1048576 >= 1) {
+              bytesMessage = `${totalBytes / 1048576} MB`;
+            } else {
+              bytesMessage = `${totalBytes} bytes`;
+            }
+            vscode4.window.showInformationMessage(`${bytesMessage} processed`);
+            currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
+            this.terminal.hide();
+            fileWatcher.dispose();
+            return;
+          } else {
+            fileWatcher.dispose();
+            return;
+          }
+        } catch (e) {
+          fileWatcher.dispose();
+          vscode4.window.showErrorMessage(e);
+        }
+      }));
+    });
+  }
+};
+
+// extension.ts
 var config;
 var previousFileWatcher;
 var configPrefix = "dbt-bigquery-preview";
-var workspacePath = vscode4.workspace.workspaceFolders[0].uri.path;
+var workspacePath = vscode5.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
   let currentPanel = new ResultsPanel(context.extensionUri);
-  const dbtProjectName = getDbtProjectName(workspacePath);
   const bigQueryRunner = new BigQueryRunner(config);
-  context.subscriptions.push(vscode4.workspace.onDidChangeConfiguration((event) => {
+  const dbtRunner = new DbtRunner(workspacePath, bigQueryRunner);
+  context.subscriptions.push(vscode5.workspace.onDidChangeConfiguration((event) => {
     if (!event.affectsConfiguration(configPrefix)) {
       return;
     }
     readConfig();
     bigQueryRunner.setConfig(config);
   }));
-  const disposable = vscode4.commands.registerCommand("dbt-bigquery-preview.preview", () => __async(this, null, function* () {
+  const disposable = vscode5.commands.registerCommand("dbt-bigquery-preview.preview", () => __async(this, null, function* () {
     try {
-      const filePath = vscode4.window.activeTextEditor.document.fileName;
-      const fileName = getFileName(filePath);
+      const filePath = vscode5.window.activeTextEditor.document.fileName;
+      const fileName = dbtRunner.getFileName(filePath);
       if (!fileName) {
-        vscode4.window.showErrorMessage("No file found");
+        vscode5.window.showErrorMessage("No file found");
         return;
       }
-      const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
+      const compiledFilePath = dbtRunner.getCompiledPath();
       if (previousFileWatcher) {
         previousFileWatcher.dispose();
       }
-      const fileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
+      const fileWatcher = vscode5.workspace.createFileSystemWatcher(new vscode5.RelativePattern(`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
       previousFileWatcher = fileWatcher;
-      const terminal = selectTerminal();
-      terminal.sendText(`dbt compile -s ${fileName}`);
-      terminal.show();
+      dbtRunner.compileDbtAndShowTerminal();
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher, terminal);
+        yield dbtRunner.runDbtAndRenderResults(uri, currentPanel, fileWatcher);
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        yield rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher, terminal);
+        yield dbtRunner.runDbtAndRenderResults(uri, currentPanel, fileWatcher);
       }));
     } catch (e) {
-      vscode4.window.showErrorMessage(e);
+      vscode5.window.showErrorMessage(e);
     }
   }));
   context.subscriptions.push(disposable);
 }
-function rundbtAndRenderResults(uri, filePath, dbtProjectName, bigQueryRunner, currentPanel, fileWatcher, terminal) {
-  return __async(this, null, function* () {
-    vscode4.window.withProgress({
-      location: vscode4.ProgressLocation.Notification,
-      cancellable: true,
-      title: "Waiting for BigQuery to run the code..."
-    }, () => __async(this, null, function* () {
-      try {
-        const queryResult = yield getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner);
-        if (queryResult.status === "success") {
-          const totalBytes = queryResult.info.totalBytesProcessed;
-          let bytesMessage;
-          if (totalBytes / 1073741824 >= 1) {
-            bytesMessage = `${totalBytes / 1073741824} GB`;
-          } else if (totalBytes / 1048576 >= 1) {
-            bytesMessage = `${totalBytes / 1048576} MB`;
-          } else {
-            bytesMessage = `${totalBytes} bytes`;
-          }
-          vscode4.window.showInformationMessage(`${bytesMessage} processed`);
-          currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
-          terminal.hide();
-          fileWatcher.dispose();
-          return;
-        } else {
-          fileWatcher.dispose();
-          return;
-        }
-      } catch (e) {
-        fileWatcher.dispose();
-        vscode4.window.showErrorMessage(e);
-      }
-    }));
-  });
-}
 function readConfig() {
   try {
-    config = vscode4.workspace.getConfiguration(configPrefix);
+    config = vscode5.workspace.getConfiguration(configPrefix);
   } catch (e) {
-    vscode4.window.showErrorMessage(`failed to read config: ${e}`);
-  }
-}
-function getDbtProjectName(workspacePath2) {
-  try {
-    const file = fs.readFileSync(`${workspacePath2}/dbt_project.yml`, "utf-8");
-    const parsedFile = yaml.parse(file);
-    const dbtProjectName = parsedFile.name;
-    return dbtProjectName;
-  } catch (e) {
-    vscode4.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
-  }
-}
-function getFileName(filePath) {
-  const lastIndex = filePath.lastIndexOf("/");
-  if (lastIndex === -1) {
-    vscode4.window.showErrorMessage("File not found");
-    return;
-  } else {
-    const fileName = filePath.slice(lastIndex + 1, filePath.length).replace(".sql", "");
-    return fileName;
-  }
-}
-function getCompiledPath(filePath, dbtProjectName) {
-  const filePathSplitted = filePath.split("/models/");
-  const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${dbtProjectName}/models/${filePathSplitted[1]}`;
-  return compiledFilePath;
-}
-function getCompiledQuery(compiledFilePath) {
-  const compiledQuery = fs.readFileSync(compiledFilePath, "utf-8");
-  return compiledQuery + " limit 100";
-}
-function getdbtQueryResults(uri, filePath, dbtProjectName, bigQueryRunner) {
-  return __async(this, null, function* () {
-    const compiledFilePath = getCompiledPath(filePath, dbtProjectName);
-    if (uri.toString().includes(compiledFilePath)) {
-      const compiledQuery = getCompiledQuery(compiledFilePath);
-      const queryResult = yield bigQueryRunner.query(compiledQuery);
-      return queryResult;
-    }
-  });
-}
-function selectTerminal() {
-  let terminalExists = false;
-  if (vscode4.window.terminals.length === 0) {
-    const terminal = vscode4.window.createTerminal("dbt-bigquery-preview");
-    return terminal;
-  }
-  const terminals = vscode4.window.terminals;
-  const items = terminals.map((t) => {
-    return {
-      label: `${t.name}`,
-      terminal: t
-    };
-  });
-  for (const item of items) {
-    if (item.label === "dbt-bigquery-preview") {
-      terminalExists = true;
-      return item.terminal;
-    }
-  }
-  if (!terminalExists) {
-    const terminal = vscode4.window.createTerminal("dbt-bigquery-preview");
-    return terminal;
+    vscode5.window.showErrorMessage(`failed to read config: ${e}`);
   }
 }
 function deactivate() {
