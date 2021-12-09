@@ -46951,7 +46951,7 @@ var ResultsPanel = class {
     this.title = "Preview dbt";
     this._extensionUri = extensionUri;
   }
-  createOrUpdateDataWrappedPanel(queryData) {
+  createOrUpdateDataHTMLPanel(queryData) {
     if (this._panel) {
       this._update(queryData);
     } else {
@@ -46991,6 +46991,9 @@ var DbtRunner = class {
   constructor(workspacePath2, bigQueryRunner) {
     this.dbtProjectName = this.getDbtProjectName(workspacePath2);
     this.bigQueryRunner = bigQueryRunner;
+  }
+  setConfig(config2) {
+    this.bigQueryRunner.setConfig(config2);
   }
   getDbtProjectName(workspacePath2) {
     try {
@@ -47084,7 +47087,7 @@ var DbtRunner = class {
               bytesMessage = `${totalBytes} bytes`;
             }
             vscode4.window.showInformationMessage(`${bytesMessage} processed`);
-            currentPanel.createOrUpdateDataWrappedPanel(queryResult.data);
+            currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
             this.terminal.hide();
             fileWatcher.dispose();
             return;
@@ -47108,15 +47111,15 @@ var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode5.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
   readConfig();
-  let currentPanel = new ResultsPanel(context.extensionUri);
   const bigQueryRunner = new BigQueryRunner(config);
   const dbtRunner = new DbtRunner(workspacePath, bigQueryRunner);
+  const currentPanel = new ResultsPanel(context.extensionUri);
   context.subscriptions.push(vscode5.workspace.onDidChangeConfiguration((event) => {
     if (!event.affectsConfiguration(configPrefix)) {
       return;
     }
     readConfig();
-    bigQueryRunner.setConfig(config);
+    dbtRunner.setConfig(config);
   }));
   const disposable = vscode5.commands.registerCommand("dbt-bigquery-preview.preview", () => __async(this, null, function* () {
     try {
