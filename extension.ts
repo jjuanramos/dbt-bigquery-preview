@@ -1,8 +1,9 @@
 import *  as vscode from 'vscode';
-import * as bigquery from './src/bigquery';
-import * as resultsPanel from './src/resultsPanel';
 import *  as fs from 'fs';
 import *  as yaml from 'yaml';
+
+import * as bigquery from './src/bigquery';
+import * as resultsPanel from './src/resultsPanel';
 
 let config;
 let previousFileWatcher;
@@ -13,7 +14,6 @@ function activate(context) {
 	readConfig();
 	let currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
 
-	// add onDidChangeFile to update dbt project name if it changes
 	const dbtProjectName = getDbtProjectName(workspacePath);
 	const bigQueryRunner = new bigquery.BigQueryRunner(config);
 
@@ -151,7 +151,7 @@ function getDbtProjectName(workspacePath) {
 }
 
 
-function getFileName(filePath) {
+function getFileName(filePath: string): string {
 	const lastIndex = filePath.lastIndexOf('/');
 	if (lastIndex === -1) {
 		vscode.window.showErrorMessage("File not found");
