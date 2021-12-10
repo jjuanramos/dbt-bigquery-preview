@@ -38,7 +38,8 @@ export class ResultsPanel {
 		const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
 
         const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
-        this._panel.webview.html = htmlWithData;
+        const htmlWithDataCleanedUp = htmlWithData.replace('null', '');
+        this._panel.webview.html = htmlWithDataCleanedUp;
     }
 
     dispose() {

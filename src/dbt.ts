@@ -48,8 +48,18 @@ export class DbtRunner {
     }
 
     getCompiledPath(): string {
-        const filePathSplitted = this.filePath.split('/models/');
-        const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/models/${filePathSplitted[1]}`;
+        let dbtKind: string | undefined;
+        let filePathSplitted: string[] | string | undefined;
+        if (this.filePath.split('/models/').length > 1) {
+            filePathSplitted = this.filePath.split('/models/');
+            dbtKind = 'models';
+        } else if (this.filePath.split('/analysis/').length > 1) {
+            filePathSplitted = this.filePath.split('/analysis/');
+            dbtKind = 'analysis';
+        } else {
+            throw 'Compiled Path not found. Try again for a model or analysis.';
+        }
+        const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/${dbtKind}/${filePathSplitted[1]}`;
         this.compiledFilePath = compiledFilePath;
         return compiledFilePath;
     }

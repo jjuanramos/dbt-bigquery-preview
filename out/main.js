@@ -46969,7 +46969,8 @@ var ResultsPanel = class {
     const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
     const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
     const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
-    this._panel.webview.html = htmlWithData;
+    const htmlWithDataCleanedUp = htmlWithData.replace("null", "");
+    this._panel.webview.html = htmlWithDataCleanedUp;
   }
   dispose() {
     this._panel.dispose();
@@ -47018,8 +47019,18 @@ var DbtRunner = class {
     }
   }
   getCompiledPath() {
-    const filePathSplitted = this.filePath.split("/models/");
-    const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/models/${filePathSplitted[1]}`;
+    let dbtKind;
+    let filePathSplitted;
+    if (this.filePath.split("/models/").length > 1) {
+      filePathSplitted = this.filePath.split("/models/");
+      dbtKind = "models";
+    } else if (this.filePath.split("/analysis/").length > 1) {
+      filePathSplitted = this.filePath.split("/analysis/");
+      dbtKind = "analysis";
+    } else {
+      throw "Compiled Path not found. Try again for a model or analysis.";
+    }
+    const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/${dbtKind}/${filePathSplitted[1]}`;
     this.compiledFilePath = compiledFilePath;
     return compiledFilePath;
   }
@@ -47086,7 +47097,7 @@ var DbtRunner = class {
             } else {
               bytesMessage = `${totalBytes} bytes`;
             }
-            vscode4.window.showInformationMessage(`${bytesMessage} processed`);
+            vscode4.window.showInformationMessage(`${Math.round(bytesMessage)} processed`);
             currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
             this.terminal.hide();
             fileWatcher.dispose();

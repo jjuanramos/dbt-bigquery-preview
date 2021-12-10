@@ -94,8 +94,6 @@ module.exports = {
 }
 
 // to do
-// 1. make it work for analyses
-// 1. replace null with ''
 // 1. Roundup bytes message
 // 1. Rewrite to TS with wished architecture in mind. Next goes BQ.js
 // 2. improve error messages
