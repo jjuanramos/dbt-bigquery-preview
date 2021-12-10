@@ -47097,7 +47097,7 @@ var DbtRunner = class {
             } else {
               bytesMessage = `${totalBytes} bytes`;
             }
-            vscode4.window.showInformationMessage(`${Math.round(bytesMessage)} processed`);
+            vscode4.window.showInformationMessage(`${bytesMessage} processed`);
             currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
             this.terminal.hide();
             fileWatcher.dispose();
