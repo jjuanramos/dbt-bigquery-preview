@@ -102,7 +102,7 @@ export class DbtRunner {
         terminal.show();
     }
 
-    async getDbtQueryResults(uri: vscode.Uri) {
+    async getDbtQueryResults(uri: vscode.Uri): Promise<bigquery.QueryResult> {
         const compiledFilePath = this.getCompiledPath();
         if (uri.toString().includes(compiledFilePath)) {
             const compiledQuery = this.getCompiledQuery();

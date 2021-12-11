@@ -95,7 +95,7 @@ module.exports = {
 
 // to do
 // 1. Roundup bytes message
-// 1. Rewrite to TS with wished architecture in mind. Next goes BQ.js
+// 1. Rewrite to TS with wished architecture in mind.
 // 2. improve error messages
 // 3. Write README.md
 // 4. Add tests

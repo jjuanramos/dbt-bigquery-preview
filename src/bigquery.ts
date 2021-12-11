@@ -1,10 +1,21 @@
-const vscode = require('vscode');
-const bigquery = require('@google-cloud/bigquery');
-const google_auth = require('./google_auth');
-const flat = require("flat");
+import * as google_auth from "./google_auth";
+import { GenerateAuthUrlOpts } from "google-auth-library";
+import * as vscode from 'vscode';
+import * as bigquery from '@google-cloud/bigquery';
+
+export interface QueryResult {
+  status: "success";
+  info: { [s: string]: any };
+  data: any[];
+  detail: string;
+}
 
 export class BigQueryRunner {
-  job = null;
+  job: bigquery.Job;
+  config: vscode.WorkspaceConfiguration;
+  googleAuth: google_auth.GoogleAuth;
+  client: bigquery.BigQuery;
+
   constructor(config) {
       this.config = config;
       this.googleAuth = new google_auth.GoogleAuth();
@@ -16,27 +27,24 @@ export class BigQueryRunner {
       });
   }
 
-  setConfig(config) {
+  setConfig(config: vscode.WorkspaceConfiguration) {
     this.config = config;
   }
 
-  getAuthorizeUrl() {
+  getAuthorizeUrl(): string {
     return this.googleAuth.getAuthorizeUrl();
   }
 
-  async setRefreshClient(authCode) {
+  async setRefreshClient(authCode: GenerateAuthUrlOpts) {
     const refreshClient = await this.googleAuth.setRefreshClient(authCode);
     this.client.authClient.cachedCredential = refreshClient;
   }
 
-  async query(queryText, isDryRun) {
-    let data;
+  async query(queryText: string, isDryRun?: boolean): Promise<QueryResult> {
+    let data: bigquery.JobResponse;
     try {
       data = await this.client.createQueryJob({
         query: queryText,
-        // location: config.get("location"),
-        // maximumBytesBilled: config.get("maximumBytesBilled"),
-        // useLegacySql: config.get("useLegacySql"),
         dryRun: !!isDryRun
       });
     } catch (err) {
@@ -50,10 +58,7 @@ export class BigQueryRunner {
       return;
     }
 
-    // vscode.window.showInformationMessage(`BigQuery job ID: ${this.job.metadata.id}`);
-
-    let result;
-
+    let result: bigquery.QueryRowsResponse;
     try {
       result = await this.job.getQueryResults({
         autoPaginate: true
@@ -71,7 +76,7 @@ export class BigQueryRunner {
     }
   }
 
-  async processResults(rows) {
+  async processResults(rows: Array<any>): Promise<QueryResult> {
     if (!this.job) {
       vscode.window.showErrorMessage(`No job was found`);
       return;
