@@ -1,7 +1,12 @@
-const vscode = require('vscode');
-const htmlWrapper = require('./html.js');
+import * as vscode from 'vscode';
+import * as htmlWrapper  from './html';
 
 export class ResultsPanel {
+    _panel: vscode.WebviewPanel | undefined;
+    viewType: string;
+    title: string;
+    _extensionUri: vscode.Uri;
+    _disposables: vscode.WebviewPanel[];
     constructor(extensionUri) {
         this._panel;
         this._disposables = [];
@@ -10,7 +15,7 @@ export class ResultsPanel {
         this._extensionUri = extensionUri;
     }
 
-    createOrUpdateDataWrappedPanel(queryData) {
+    createOrUpdateDataHTMLPanel(queryData: string[]) {
         if (this._panel) {
             this._update(queryData);
         } else {
@@ -30,15 +35,16 @@ export class ResultsPanel {
     }
 
     // add styles.css and scripts.js to update here
-    _update(queryData) {
-        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'script.js');
+    _update(queryData: string[]) {
+        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'collapsible.js');
         const scriptUri = scriptPath.with({ 'scheme': 'vscode-resource'});
 
         const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css');
 		const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
 
         const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
-        this._panel.webview.html = htmlWithData;
+        const htmlWithDataCleanedUp = htmlWithData.replace('null', '');
+        this._panel.webview.html = htmlWithDataCleanedUp;
     }
 
     dispose() {
