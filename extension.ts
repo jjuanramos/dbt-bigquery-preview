@@ -1,3 +1,9 @@
+// to do
+// 1. Roundup bytes message
+// 2. Test in Windows
+// 3. Write README.md
+// 4. Release!!
+
 import *  as vscode from 'vscode';
 
 import * as bigquery from './src/bigquery';
@@ -92,10 +98,3 @@ module.exports = {
 	activate,
 	deactivate
 }
-
-// to do
-// 1. Roundup bytes message
-// 2. improve error messages
-// 3. Write README.md
-// 4. Add tests
-// 5. cache existing queries
