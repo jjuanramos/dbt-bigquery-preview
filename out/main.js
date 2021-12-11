@@ -41077,27 +41077,24 @@ var init_html = __esm({
         } else {
           const columnNames = Object.keys(jsObject);
           if (columnNames.length === 1 && columnNames.includes("value")) {
-            content = jsObject["value"];
+            content = jsObject["value"] ? jsObject["value"] : "";
           } else if (columnNames.includes("c") && columnNames.includes("s") && columnNames.includes("e") && columnNames.includes("constructor")) {
             const valueEndsAt = jsObject["e"];
             const valueLength = jsObject["c"].length;
             if (valueEndsAt + 1 === valueLength) {
-              content = jsObject["c"].join("");
+              content = jsObject["c"] ? jsObject["c"].join("") : "";
             } else {
               const integerPart = jsObject["c"].slice(0, valueEndsAt + 1).join("");
               const decimals = jsObject["c"].slice(valueEndsAt + 1).join("");
-              content = `${integerPart}.${decimals}`;
+              content = integerPart ? `${integerPart}.${decimals}` : "";
             }
           } else if (columnNames.length === 0) {
             content = "";
           } else {
             for (const columnName of columnNames) {
               let columnContent = jsObject[columnName];
-              if (columnContent === void 0 || columnContent === null) {
-                columnContent = "";
-              }
               content += `
-                ${columnName}: ${jsObject[columnName]},<br><br>
+                ${columnName}: ${columnContent ? columnContent : ""},<br><br>
                 `;
             }
             content = `
@@ -41162,7 +41159,7 @@ var init_html = __esm({
               const htmlContent = this.wrapJSObject(row[name]);
               htmlRow += htmlContent;
             } else {
-              htmlRow += `<td>${row[name]}</td>`;
+              htmlRow += `<td>${row[name] ? row[name] : ""}</td>`;
             }
           }
           htmlRow += "</tr>";
@@ -41176,7 +41173,7 @@ var init_html = __esm({
             const htmlContent = this.wrapJSObject(row[name]);
             htmlRow += htmlContent;
           } else {
-            htmlRow += `<td>${row[name]}</td>`;
+            htmlRow += `<td>${row[name] ? row[name] : ""}</td>`;
           }
         }
         htmlRow += "</tr>";

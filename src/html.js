@@ -37,7 +37,7 @@ export class HTMLResultsWrapper {
       } else {
           const columnNames = Object.keys(jsObject);
           if (columnNames.length === 1 && columnNames.includes("value")) {
-            content = jsObject["value"];
+            content = jsObject["value"] ? jsObject["value"] : "";
           } else if (
               columnNames.includes("c") &&
               columnNames.includes("s") &&
@@ -47,22 +47,19 @@ export class HTMLResultsWrapper {
             const valueEndsAt = jsObject["e"];
             const valueLength = jsObject["c"].length;
             if ((valueEndsAt + 1) === valueLength) {
-                content = jsObject["c"].join("");
+                content = jsObject["c"] ? jsObject["c"].join("") : '';
             } else {
                 const integerPart = jsObject["c"].slice(0, valueEndsAt + 1).join('');
                 const decimals = jsObject["c"].slice(valueEndsAt + 1).join('');
-                content = `${integerPart}.${decimals}`;
+                content = integerPart ? `${integerPart}.${decimals}` : '';
             }
           } else if (columnNames.length === 0) {
             content = "";
           } else {
             for (const columnName of columnNames) {
                 let columnContent = jsObject[columnName];
-                if (columnContent === undefined || columnContent === null) {
-                    columnContent = "";
-                }
                 content += `
-                ${columnName}: ${jsObject[columnName]},<br><br>
+                ${columnName}: ${columnContent ? columnContent : ''},<br><br>
                 `;
             }
             content = `
@@ -110,10 +107,8 @@ export class HTMLResultsWrapper {
       let htmlRow = '';
       for (let subrow = 0; subrow < maximumLength; subrow++) {
           if (subrow === 0) {
-            //   htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
               htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
             } else {
-            //   htmlRow += `<tr class="${rowStyle}"><td></td>`;
               htmlRow += `<tr class="${rowStyle}"><td></td>`;
           }
 
@@ -136,7 +131,7 @@ export class HTMLResultsWrapper {
                   const htmlContent = this.wrapJSObject(row[name]);
                   htmlRow += htmlContent;
               }else {
-                  htmlRow += `<td>${row[name]}</td>`;
+                  htmlRow += `<td>${row[name] ? row[name] : ''}</td>`;
               }
           }
           htmlRow += '</tr>';
@@ -146,14 +141,13 @@ export class HTMLResultsWrapper {
   }
 
   getHTMLforRow(row, pos, arrayColumnNames,rowStyle) {
-    //   let htmlRow = `<tr class="${rowStyle}><td>${pos + 1}</td>`;
       let htmlRow = `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
       for (const name of this.columnNames) {
           if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
               const htmlContent = this.wrapJSObject(row[name]);
               htmlRow += htmlContent;
           } else {
-              htmlRow += `<td>${row[name]}</td>`;
+              htmlRow += `<td>${row[name] ? row[name] : ''}</td>`;
           }
       }
       htmlRow += '</tr>';
