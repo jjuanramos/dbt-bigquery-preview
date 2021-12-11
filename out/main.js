@@ -5,16 +5,8 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[Object.keys(fn)[0]])(fn = 0)), res;
-};
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
-var __export = (target, all) => {
-  __markAsModule(target);
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
 };
 var __reExport = (target, module2, desc) => {
   if (module2 && typeof module2 === "object" || typeof module2 === "function") {
@@ -7476,7 +7468,7 @@ var require_oauth2client = __commonJS({
       CertificateFormat2["PEM"] = "PEM";
       CertificateFormat2["JWK"] = "JWK";
     })(CertificateFormat = exports2.CertificateFormat || (exports2.CertificateFormat = {}));
-    var OAuth2Client = class extends authclient_1.AuthClient {
+    var OAuth2Client2 = class extends authclient_1.AuthClient {
       constructor(optionsOrClientId, clientSecret, redirectUri) {
         super();
         this.certificateCache = {};
@@ -7500,7 +7492,7 @@ var require_oauth2client = __commonJS({
         if (opts.scope instanceof Array) {
           opts.scope = opts.scope.join(" ");
         }
-        const rootUrl = OAuth2Client.GOOGLE_OAUTH2_AUTH_BASE_URL_;
+        const rootUrl = OAuth2Client2.GOOGLE_OAUTH2_AUTH_BASE_URL_;
         return rootUrl + "?" + querystring.stringify(opts);
       }
       generateCodeVerifier() {
@@ -7523,7 +7515,7 @@ var require_oauth2client = __commonJS({
         }
       }
       async getTokenAsync(options) {
-        const url = OAuth2Client.GOOGLE_OAUTH2_TOKEN_URL_;
+        const url = OAuth2Client2.GOOGLE_OAUTH2_TOKEN_URL_;
         const values = {
           code: options.code,
           client_id: options.client_id || this._clientId,
@@ -7567,7 +7559,7 @@ var require_oauth2client = __commonJS({
         if (!refreshToken) {
           throw new Error("No refresh token is set.");
         }
-        const url = OAuth2Client.GOOGLE_OAUTH2_TOKEN_URL_;
+        const url = OAuth2Client2.GOOGLE_OAUTH2_TOKEN_URL_;
         const data = {
           refresh_token: refreshToken,
           client_id: this._clientId,
@@ -7684,11 +7676,11 @@ var require_oauth2client = __commonJS({
       }
       static getRevokeTokenUrl(token) {
         const parameters = querystring.stringify({ token });
-        return `${OAuth2Client.GOOGLE_OAUTH2_REVOKE_URL_}?${parameters}`;
+        return `${OAuth2Client2.GOOGLE_OAUTH2_REVOKE_URL_}?${parameters}`;
       }
       revokeToken(token, callback) {
         const opts = {
-          url: OAuth2Client.getRevokeTokenUrl(token),
+          url: OAuth2Client2.getRevokeTokenUrl(token),
           method: "POST"
         };
         if (callback) {
@@ -7775,7 +7767,7 @@ var require_oauth2client = __commonJS({
           throw new Error("The verifyIdToken method requires an ID Token");
         }
         const response = await this.getFederatedSignonCertsAsync();
-        const login = await this.verifySignedJwtWithCertsAsync(options.idToken, response.certs, options.audience, OAuth2Client.ISSUERS_, options.maxExpiry);
+        const login = await this.verifySignedJwtWithCertsAsync(options.idToken, response.certs, options.audience, OAuth2Client2.ISSUERS_, options.maxExpiry);
         return login;
       }
       async getTokenInfo(accessToken) {
@@ -7785,7 +7777,7 @@ var require_oauth2client = __commonJS({
             "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Bearer ${accessToken}`
           },
-          url: OAuth2Client.GOOGLE_TOKEN_INFO_URL
+          url: OAuth2Client2.GOOGLE_TOKEN_INFO_URL
         });
         const info = Object.assign({
           expiry_date: new Date().getTime() + data.expires_in * 1e3,
@@ -7812,10 +7804,10 @@ var require_oauth2client = __commonJS({
         let url;
         switch (format) {
           case CertificateFormat.PEM:
-            url = OAuth2Client.GOOGLE_OAUTH2_FEDERATED_SIGNON_PEM_CERTS_URL_;
+            url = OAuth2Client2.GOOGLE_OAUTH2_FEDERATED_SIGNON_PEM_CERTS_URL_;
             break;
           case CertificateFormat.JWK:
-            url = OAuth2Client.GOOGLE_OAUTH2_FEDERATED_SIGNON_JWK_CERTS_URL_;
+            url = OAuth2Client2.GOOGLE_OAUTH2_FEDERATED_SIGNON_JWK_CERTS_URL_;
             break;
           default:
             throw new Error(`Unsupported certificate format ${format}`);
@@ -7863,7 +7855,7 @@ var require_oauth2client = __commonJS({
       }
       async getIapPublicKeysAsync() {
         let res;
-        const url = OAuth2Client.GOOGLE_OAUTH2_IAP_PUBLIC_KEY_URL_;
+        const url = OAuth2Client2.GOOGLE_OAUTH2_IAP_PUBLIC_KEY_URL_;
         try {
           res = await this.transporter.request({ url });
         } catch (e) {
@@ -7878,7 +7870,7 @@ var require_oauth2client = __commonJS({
       async verifySignedJwtWithCertsAsync(jwt, certs, requiredAudience, issuers, maxExpiry) {
         const crypto2 = crypto_1.createCrypto();
         if (!maxExpiry) {
-          maxExpiry = OAuth2Client.MAX_TOKEN_LIFETIME_SECS_;
+          maxExpiry = OAuth2Client2.MAX_TOKEN_LIFETIME_SECS_;
         }
         const segments = jwt.split(".");
         if (segments.length !== 3) {
@@ -7933,8 +7925,8 @@ var require_oauth2client = __commonJS({
         if (exp >= now + maxExpiry) {
           throw new Error("Expiration time too far in future: " + JSON.stringify(payload));
         }
-        const earliest = iat - OAuth2Client.CLOCK_SKEW_SECS_;
-        const latest = exp + OAuth2Client.CLOCK_SKEW_SECS_;
+        const earliest = iat - OAuth2Client2.CLOCK_SKEW_SECS_;
+        const latest = exp + OAuth2Client2.CLOCK_SKEW_SECS_;
         if (now < earliest) {
           throw new Error("Token used too early, " + now + " < " + earliest + ": " + JSON.stringify(payload));
         }
@@ -7973,17 +7965,17 @@ var require_oauth2client = __commonJS({
         return expiryDate ? expiryDate <= new Date().getTime() + this.eagerRefreshThresholdMillis : false;
       }
     };
-    exports2.OAuth2Client = OAuth2Client;
-    OAuth2Client.GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo";
-    OAuth2Client.GOOGLE_OAUTH2_AUTH_BASE_URL_ = "https://accounts.google.com/o/oauth2/v2/auth";
-    OAuth2Client.GOOGLE_OAUTH2_TOKEN_URL_ = "https://oauth2.googleapis.com/token";
-    OAuth2Client.GOOGLE_OAUTH2_REVOKE_URL_ = "https://oauth2.googleapis.com/revoke";
-    OAuth2Client.GOOGLE_OAUTH2_FEDERATED_SIGNON_PEM_CERTS_URL_ = "https://www.googleapis.com/oauth2/v1/certs";
-    OAuth2Client.GOOGLE_OAUTH2_FEDERATED_SIGNON_JWK_CERTS_URL_ = "https://www.googleapis.com/oauth2/v3/certs";
-    OAuth2Client.GOOGLE_OAUTH2_IAP_PUBLIC_KEY_URL_ = "https://www.gstatic.com/iap/verify/public_key";
-    OAuth2Client.CLOCK_SKEW_SECS_ = 300;
-    OAuth2Client.MAX_TOKEN_LIFETIME_SECS_ = 86400;
-    OAuth2Client.ISSUERS_ = [
+    exports2.OAuth2Client = OAuth2Client2;
+    OAuth2Client2.GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo";
+    OAuth2Client2.GOOGLE_OAUTH2_AUTH_BASE_URL_ = "https://accounts.google.com/o/oauth2/v2/auth";
+    OAuth2Client2.GOOGLE_OAUTH2_TOKEN_URL_ = "https://oauth2.googleapis.com/token";
+    OAuth2Client2.GOOGLE_OAUTH2_REVOKE_URL_ = "https://oauth2.googleapis.com/revoke";
+    OAuth2Client2.GOOGLE_OAUTH2_FEDERATED_SIGNON_PEM_CERTS_URL_ = "https://www.googleapis.com/oauth2/v1/certs";
+    OAuth2Client2.GOOGLE_OAUTH2_FEDERATED_SIGNON_JWK_CERTS_URL_ = "https://www.googleapis.com/oauth2/v3/certs";
+    OAuth2Client2.GOOGLE_OAUTH2_IAP_PUBLIC_KEY_URL_ = "https://www.gstatic.com/iap/verify/public_key";
+    OAuth2Client2.CLOCK_SKEW_SECS_ = 300;
+    OAuth2Client2.MAX_TOKEN_LIFETIME_SECS_ = 86400;
+    OAuth2Client2.ISSUERS_ = [
       "accounts.google.com",
       "https://accounts.google.com"
     ];
@@ -26912,7 +26904,7 @@ var require_refreshclient = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.UserRefreshClient = void 0;
     var oauth2client_1 = require_oauth2client();
-    var UserRefreshClient = class extends oauth2client_1.OAuth2Client {
+    var UserRefreshClient2 = class extends oauth2client_1.OAuth2Client {
       constructor(optionsOrClientId, clientSecret, refreshToken, eagerRefreshThresholdMillis, forceRefreshOnFailure) {
         const opts = optionsOrClientId && typeof optionsOrClientId === "object" ? optionsOrClientId : {
           clientId: optionsOrClientId,
@@ -26980,7 +26972,7 @@ var require_refreshclient = __commonJS({
         });
       }
     };
-    exports2.UserRefreshClient = UserRefreshClient;
+    exports2.UserRefreshClient = UserRefreshClient2;
   }
 });
 
@@ -40866,185 +40858,6 @@ var require_src13 = __commonJS({
   }
 });
 
-// src/html.js
-var html_exports = {};
-__export(html_exports, {
-  HTMLResultsWrapper: () => HTMLResultsWrapper
-});
-var HTMLResultsWrapper;
-var init_html = __esm({
-  "src/html.js"() {
-    HTMLResultsWrapper = class {
-      constructor(data) {
-        this.data = data;
-        this.columnNames = Object.keys(data[0]);
-      }
-      getDataWrapped(scriptUri, stylesUri) {
-        const htmlData = this.wrapDataInHTML();
-        const dataWrapped = this.createHTMLTemplate(htmlData, scriptUri, stylesUri);
-        return dataWrapped;
-      }
-      createHTMLTemplate(table, scriptUri, stylesUri) {
-        return `<!DOCTYPE html>
-        <html lang="en">
-
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Preview dbt</title>
-            <link href="${stylesUri}" rel="stylesheet">
-
-            <script src='${scriptUri}' defer><\/script>
-        </head>
-
-        <body>
-            <table>${table}</table>
-        </body>
-
-        </html>`;
-      }
-      wrapJSObject(jsObject) {
-        let content = "";
-        if (jsObject === void 0 || jsObject === null) {
-          content = "";
-        } else {
-          const columnNames = Object.keys(jsObject);
-          if (columnNames.length === 1 && columnNames.includes("value")) {
-            content = jsObject["value"] ? jsObject["value"] : "";
-          } else if (columnNames.includes("c") && columnNames.includes("s") && columnNames.includes("e") && columnNames.includes("constructor")) {
-            const valueEndsAt = jsObject["e"];
-            const valueLength = jsObject["c"].length;
-            if (valueEndsAt + 1 === valueLength) {
-              content = jsObject["c"] ? jsObject["c"].join("") : "";
-            } else {
-              const integerPart = jsObject["c"].slice(0, valueEndsAt + 1).join("");
-              const decimals = jsObject["c"].slice(valueEndsAt + 1).join("");
-              content = integerPart ? `${integerPart}.${decimals}` : "";
-            }
-          } else if (columnNames.length === 0) {
-            content = "";
-          } else {
-            for (const columnName of columnNames) {
-              let columnContent = jsObject[columnName];
-              content += `
-                ${columnName}: ${columnContent ? columnContent : ""},<br><br>
-                `;
-            }
-            content = `
-            <div class="collapsible">
-                <p>
-                    { ... }
-                </p>
-            </div>
-            <div class="content">
-                <br>
-                ${content}
-            </div>`;
-          }
-        }
-        return `
-      <td>
-          ${content}
-      </td>
-      `;
-      }
-      createHTMLHeader(rowStyle) {
-        let htmlHeader = `<tr class="${rowStyle} header"><th></th>`;
-        for (const name of this.columnNames) {
-          htmlHeader += `<th>${name}</th>`;
-        }
-        ;
-        htmlHeader += "</tr>";
-        return htmlHeader;
-      }
-      getArrayColumnNames() {
-        let arrayColumnNames = [];
-        const firstRow = this.data[0];
-        for (const name of this.columnNames) {
-          if (Array.isArray(firstRow[name])) {
-            arrayColumnNames.push(name);
-          }
-        }
-        return arrayColumnNames;
-      }
-      getHTMLforRowWithArrayColumn(row, pos, maximumLength, arrayColumnNames, rowStyle) {
-        let htmlRow = "";
-        for (let subrow = 0; subrow < maximumLength; subrow++) {
-          if (subrow === 0) {
-            htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
-          } else {
-            htmlRow += `<tr class="${rowStyle}"><td></td>`;
-          }
-          for (const name of this.columnNames) {
-            if (arrayColumnNames.includes(name)) {
-              const content = row[name][subrow];
-              if (content === void 0 || content === null) {
-                htmlRow += `<td></td>`;
-              } else if (content instanceof Object && Array.isArray(content) == false) {
-                const htmlContent = this.wrapJSObject(content);
-                htmlRow += htmlContent;
-              } else {
-                htmlRow += `<td>${content}</td>`;
-              }
-            } else if (subrow > 0) {
-              htmlRow += `<td></td>`;
-            } else if (row[name] instanceof Object) {
-              const htmlContent = this.wrapJSObject(row[name]);
-              htmlRow += htmlContent;
-            } else {
-              htmlRow += `<td>${row[name] ? row[name] : ""}</td>`;
-            }
-          }
-          htmlRow += "</tr>";
-        }
-        return htmlRow;
-      }
-      getHTMLforRow(row, pos, arrayColumnNames, rowStyle) {
-        let htmlRow = `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
-        for (const name of this.columnNames) {
-          if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
-            const htmlContent = this.wrapJSObject(row[name]);
-            htmlRow += htmlContent;
-          } else {
-            htmlRow += `<td>${row[name] ? row[name] : ""}</td>`;
-          }
-        }
-        htmlRow += "</tr>";
-        return htmlRow;
-      }
-      wrapDataInHTML() {
-        ;
-        let rowStyle = "even";
-        let htmlData = this.createHTMLHeader(rowStyle);
-        const arrayColumnNames = this.getArrayColumnNames();
-        rowStyle = "odd";
-        for (let pos = 0; pos < this.data.length; pos++) {
-          const row = this.data[pos];
-          if (arrayColumnNames.length > 0) {
-            let maximumLength = 0;
-            for (const name of arrayColumnNames) {
-              if (row[name].length > maximumLength) {
-                maximumLength = row[name].length;
-              }
-            }
-            const htmlRow = this.getHTMLforRowWithArrayColumn(row, pos, maximumLength, arrayColumnNames, rowStyle);
-            htmlData += htmlRow;
-          } else {
-            const htmlRow = this.getHTMLforRow(row, pos, arrayColumnNames, rowStyle);
-            htmlData += htmlRow;
-          }
-          if (rowStyle === "odd") {
-            rowStyle = "even";
-          } else {
-            rowStyle = "odd";
-          }
-        }
-        return htmlData;
-      }
-    };
-  }
-});
-
 // node_modules/yaml/dist/PlainValue-ec8e588e.js
 var require_PlainValue_ec8e588e = __commonJS({
   "node_modules/yaml/dist/PlainValue-ec8e588e.js"(exports2) {
@@ -46680,9 +46493,9 @@ var require_yaml = __commonJS({
 // extension.ts
 var vscode5 = __toModule(require("vscode"));
 
-// src/google_auth.js
-var vscode = require("vscode");
-var google_auth = require_src7();
+// src/google_auth.ts
+var vscode = __toModule(require("vscode"));
+var google_auth = __toModule(require_src7());
 var GoogleAuth = class {
   constructor() {
     this.clientId = "845129514279-njboj9fbrordd88a0p9hi5k6i0oepgn0.apps.googleusercontent.com";
@@ -46812,9 +46625,180 @@ var BigQueryRunner = class {
   }
 };
 
-// src/resultsPanel.js
-var vscode3 = require("vscode");
-var htmlWrapper = (init_html(), html_exports);
+// src/resultsPanel.ts
+var vscode3 = __toModule(require("vscode"));
+
+// src/html.ts
+var HTMLResultsWrapper = class {
+  constructor(data) {
+    this.data = data;
+    this.columnNames = Object.keys(data[0]);
+  }
+  getDataWrapped(scriptUri, stylesUri) {
+    const htmlData = this.wrapDataInHTML();
+    const dataWrapped = this.createHTMLTemplate(htmlData, scriptUri, stylesUri);
+    return dataWrapped;
+  }
+  createHTMLTemplate(table, scriptUri, stylesUri) {
+    return `<!DOCTYPE html>
+            <html lang="en">
+
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Preview dbt</title>
+                <link href="${stylesUri}" rel="stylesheet">
+
+                <script src='${scriptUri}' defer><\/script>
+            </head>
+
+            <body>
+                <table>${table}</table>
+            </body>
+
+            </html>`;
+  }
+  wrapJSObject(jsObject) {
+    let content = "";
+    if (jsObject === void 0 || jsObject === null) {
+      content = "";
+    } else {
+      const columnNames = Object.keys(jsObject);
+      if (columnNames.length === 1 && columnNames.includes("value")) {
+        content = jsObject["value"] ? jsObject["value"] : "";
+      } else if (columnNames.includes("c") && columnNames.includes("s") && columnNames.includes("e") && columnNames.includes("constructor")) {
+        const valueEndsAt = jsObject["e"];
+        const valueLength = jsObject["c"].length;
+        if (valueEndsAt + 1 === valueLength) {
+          content = jsObject["c"] ? jsObject["c"].join("") : "";
+        } else {
+          const integerPart = jsObject["c"].slice(0, valueEndsAt + 1).join("");
+          const decimals = jsObject["c"].slice(valueEndsAt + 1).join("");
+          content = integerPart ? `${integerPart}.${decimals}` : "";
+        }
+      } else if (columnNames.length === 0) {
+        content = "";
+      } else {
+        for (const columnName of columnNames) {
+          let columnContent = jsObject[columnName];
+          content += `
+                    ${columnName}: ${columnContent ? columnContent : ""},<br><br>
+                    `;
+        }
+        content = `
+                <div class="collapsible">
+                    <p>
+                        { ... }
+                    </p>
+                </div>
+                <div class="content">
+                    <br>
+                    ${content}
+                </div>`;
+      }
+    }
+    return `
+        <td>
+            ${content}
+        </td>
+        `;
+  }
+  createHTMLHeader(rowStyle) {
+    let htmlHeader = `<tr class="${rowStyle} header"><th></th>`;
+    for (const name of this.columnNames) {
+      htmlHeader += `<th>${name}</th>`;
+    }
+    ;
+    htmlHeader += "</tr>";
+    return htmlHeader;
+  }
+  getArrayColumnNames() {
+    let arrayColumnNames = [];
+    const firstRow = this.data[0];
+    for (const name of this.columnNames) {
+      if (Array.isArray(firstRow[name])) {
+        arrayColumnNames.push(name);
+      }
+    }
+    return arrayColumnNames;
+  }
+  getHTMLforRowWithArrayColumn(row, pos, maximumLength, arrayColumnNames, rowStyle) {
+    let htmlRow = "";
+    for (let subrow = 0; subrow < maximumLength; subrow++) {
+      if (subrow === 0) {
+        htmlRow += `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
+      } else {
+        htmlRow += `<tr class="${rowStyle}"><td></td>`;
+      }
+      for (const name of this.columnNames) {
+        if (arrayColumnNames.includes(name)) {
+          const content = row[name][subrow];
+          if (content === void 0 || content === null) {
+            htmlRow += `<td></td>`;
+          } else if (content instanceof Object && Array.isArray(content) == false) {
+            const htmlContent = this.wrapJSObject(content);
+            htmlRow += htmlContent;
+          } else {
+            htmlRow += `<td>${content}</td>`;
+          }
+        } else if (subrow > 0) {
+          htmlRow += `<td></td>`;
+        } else if (row[name] instanceof Object) {
+          const htmlContent = this.wrapJSObject(row[name]);
+          htmlRow += htmlContent;
+        } else {
+          htmlRow += `<td>${row[name] ? row[name] : ""}</td>`;
+        }
+      }
+      htmlRow += "</tr>";
+    }
+    return htmlRow;
+  }
+  getHTMLforRow(row, pos, arrayColumnNames, rowStyle) {
+    let htmlRow = `<tr class="${rowStyle}"><td>${pos + 1}</td>`;
+    for (const name of this.columnNames) {
+      if (row[name] instanceof Object && arrayColumnNames.includes(name) === false) {
+        const htmlContent = this.wrapJSObject(row[name]);
+        htmlRow += htmlContent;
+      } else {
+        htmlRow += `<td>${row[name] ? row[name] : ""}</td>`;
+      }
+    }
+    htmlRow += "</tr>";
+    return htmlRow;
+  }
+  wrapDataInHTML() {
+    ;
+    let rowStyle = "even";
+    let htmlData = this.createHTMLHeader(rowStyle);
+    const arrayColumnNames = this.getArrayColumnNames();
+    rowStyle = "odd";
+    for (let pos = 0; pos < this.data.length; pos++) {
+      const row = this.data[pos];
+      if (arrayColumnNames.length > 0) {
+        let maximumLength = 0;
+        for (const name of arrayColumnNames) {
+          if (row[name].length > maximumLength) {
+            maximumLength = row[name].length;
+          }
+        }
+        const htmlRow = this.getHTMLforRowWithArrayColumn(row, pos, maximumLength, arrayColumnNames, rowStyle);
+        htmlData += htmlRow;
+      } else {
+        const htmlRow = this.getHTMLforRow(row, pos, arrayColumnNames, rowStyle);
+        htmlData += htmlRow;
+      }
+      if (rowStyle === "odd") {
+        rowStyle = "even";
+      } else {
+        rowStyle = "odd";
+      }
+    }
+    return htmlData;
+  }
+};
+
+// src/resultsPanel.ts
 var ResultsPanel = class {
   constructor(extensionUri) {
     this._panel;
@@ -46840,7 +46824,7 @@ var ResultsPanel = class {
     const scriptUri = scriptPath.with({ "scheme": "vscode-resource" });
     const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
     const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
-    const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
+    const htmlWithData = new HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
     const htmlWithDataCleanedUp = htmlWithData.replace("null", "");
     this._panel.webview.html = htmlWithDataCleanedUp;
   }

@@ -9,7 +9,7 @@ let previousFileWatcher: vscode.FileSystemWatcher;
 const configPrefix = 'dbt-bigquery-preview';
 const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
-function activate(context) {
+function activate(context: vscode.ExtensionContext) {
 	readConfig();
 
 	const bigQueryRunner = new bigquery.BigQueryRunner(config);
@@ -95,7 +95,6 @@ module.exports = {
 
 // to do
 // 1. Roundup bytes message
-// 1. Rewrite to TS with wished architecture in mind.
 // 2. improve error messages
 // 3. Write README.md
 // 4. Add tests

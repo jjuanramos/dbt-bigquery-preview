@@ -1,8 +1,11 @@
-const vscode = require('vscode');
-const google_auth = require('google-auth-library');
+import * as vscode from 'vscode';
+import * as google_auth from 'google-auth-library';
 
 export class GoogleAuth {
-    constructor () {
+    clientId: string;
+    oAuth2Client: google_auth.OAuth2Client;
+
+    constructor() {
         this.clientId = "845129514279-njboj9fbrordd88a0p9hi5k6i0oepgn0.apps.googleusercontent.com"; 
         this.oAuth2Client = new google_auth.OAuth2Client({
         clientId: this.clientId,
@@ -10,7 +13,7 @@ export class GoogleAuth {
         });
     }
   
-    getAuthorizeUrl () {
+    getAuthorizeUrl(): string {
       const authorizeUrl = this.oAuth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: [
@@ -24,7 +27,7 @@ export class GoogleAuth {
       return authorizeUrl;
     }
   
-    async setRefreshClient (authCode) {
+    async setRefreshClient(authCode: string): Promise<google_auth.UserRefreshClient> {
       const r = await this.oAuth2Client.getToken(authCode);
   
       this.oAuth2Client.setCredentials(r.tokens);

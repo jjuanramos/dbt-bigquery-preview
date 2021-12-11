@@ -6,7 +6,7 @@ import * as bigquery from '@google-cloud/bigquery';
 export interface QueryResult {
   status: "success";
   info: { [s: string]: any };
-  data: any[];
+  data: string[];
   detail: string;
 }
 
@@ -35,7 +35,7 @@ export class BigQueryRunner {
     return this.googleAuth.getAuthorizeUrl();
   }
 
-  async setRefreshClient(authCode: GenerateAuthUrlOpts) {
+  async setRefreshClient(authCode: string) {
     const refreshClient = await this.googleAuth.setRefreshClient(authCode);
     this.client.authClient.cachedCredential = refreshClient;
   }
