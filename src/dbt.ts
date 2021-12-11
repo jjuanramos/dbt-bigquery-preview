@@ -6,12 +6,12 @@ import * as resultsPanel from './resultsPanel';
 import * as bigquery from './bigquery';
 
 export class DbtRunner {
-    dbtProjectName: string
-    bigQueryRunner: bigquery.BigQueryRunner
-    filePath: string | undefined
-    fileName: string | undefined
-    terminal: vscode.Terminal
-    compiledFilePath: string | undefined
+    dbtProjectName: string;
+    bigQueryRunner: bigquery.BigQueryRunner;
+    filePath: string | undefined;
+    fileName: string | undefined;
+    terminal: vscode.Terminal;
+    compiledFilePath: string | undefined;
 
     constructor(workspacePath: string, bigQueryRunner: bigquery.BigQueryRunner) {
         this.dbtProjectName = this.getDbtProjectName(workspacePath);

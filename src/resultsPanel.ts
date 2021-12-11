@@ -7,6 +7,7 @@ export class ResultsPanel {
     title: string;
     _extensionUri: vscode.Uri;
     _disposables: vscode.WebviewPanel[];
+    
     constructor(extensionUri) {
         this._panel;
         this._disposables = [];

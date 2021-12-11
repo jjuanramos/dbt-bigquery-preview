@@ -3,11 +3,12 @@ import * as vscode from 'vscode';
 export class HTMLResultsWrapper {
     data: string[];
     columnNames: string[];
+
     constructor(data: string[]) {
         this.data = data;
         this.columnNames = Object.keys(data[0]);
     }
-
+    
     getDataWrapped(scriptUri: vscode.Uri, stylesUri: vscode.Uri) {
         const htmlData = this.wrapDataInHTML();
         const dataWrapped = this.createHTMLTemplate(htmlData, scriptUri, stylesUri);
