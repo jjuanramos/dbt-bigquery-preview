@@ -46498,7 +46498,9 @@ var vscode = __toModule(require("vscode"));
 var google_auth = __toModule(require_src7());
 var GoogleAuth = class {
   constructor() {
+    this.clientId = "845129514279-njboj9fbrordd88a0p9hi5k6i0oepgn0.apps.googleusercontent.com";
     this.oAuth2Client = new google_auth.OAuth2Client({
+      clientId: this.clientId,
       redirectUri: "urn:ietf:wg:oauth:2.0:oob"
     });
   }
@@ -46527,6 +46529,7 @@ var GoogleAuth = class {
       const tokenInfo = yield this.oAuth2Client.getTokenInfo(this.oAuth2Client.credentials.access_token);
       vscode.window.showInformationMessage(`Successfully login to Google: ${JSON.stringify(tokenInfo, null, "  ")}`);
       const refreshClient = new google_auth.UserRefreshClient({
+        clientId: this.clientId,
         refreshToken: r.tokens.refresh_token
       });
       refreshClient.getRequestHeaders();
@@ -46885,7 +46888,6 @@ var DbtRunner = class {
     }
     const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/${dbtKind}/${filePathSplitted[1]}`;
     this.compiledFilePath = compiledFilePath;
-    return compiledFilePath;
   }
   getCompiledQuery() {
     const compiledQuery = fs.readFileSync(this.compiledFilePath, "utf-8");
@@ -46916,22 +46918,28 @@ var DbtRunner = class {
     }
   }
   compileDbtAndShowTerminal() {
-    const terminal = this.selectTerminal();
-    this.terminal = terminal;
-    terminal.sendText(`dbt compile -s ${this.fileName}`);
-    terminal.show();
+    this.terminal = this.selectTerminal();
+    this.terminal.sendText(`dbt compile -s ${this.fileName}`);
+    this.terminal.show();
+  }
+  createFileWatcher() {
+    if (this.dbtFileWatcher) {
+      this.dbtFileWatcher.dispose();
+    }
+    this.getCompiledPath();
+    this.dbtFileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
+    return this.dbtFileWatcher;
   }
   getDbtQueryResults(uri) {
     return __async(this, null, function* () {
-      const compiledFilePath = this.getCompiledPath();
-      if (uri.toString().includes(compiledFilePath)) {
+      if (uri.toString().includes(this.compiledFilePath)) {
         const compiledQuery = this.getCompiledQuery();
         const queryResult = yield this.bigQueryRunner.query(compiledQuery);
         return queryResult;
       }
     });
   }
-  runDbtAndRenderResults(uri, currentPanel, fileWatcher) {
+  runDbtAndRenderResults(uri, currentPanel) {
     return __async(this, null, function* () {
       vscode4.window.withProgress({
         location: vscode4.ProgressLocation.Notification,
@@ -46953,14 +46961,14 @@ var DbtRunner = class {
             vscode4.window.showInformationMessage(`${bytesMessage} processed`);
             currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
             this.terminal.hide();
-            fileWatcher.dispose();
+            this.dbtFileWatcher.dispose();
             return;
           } else {
-            fileWatcher.dispose();
+            this.dbtFileWatcher.dispose();
             return;
           }
         } catch (e) {
-          fileWatcher.dispose();
+          this.dbtFileWatcher.dispose();
           vscode4.window.showErrorMessage(e);
         }
       }));
@@ -46970,7 +46978,6 @@ var DbtRunner = class {
 
 // extension.ts
 var config;
-var previousFileWatcher;
 var configPrefix = "dbt-bigquery-preview";
 var workspacePath = vscode5.workspace.workspaceFolders[0].uri.path;
 function activate(context) {
@@ -46993,18 +47000,13 @@ function activate(context) {
         vscode5.window.showErrorMessage("No file found");
         return;
       }
-      const compiledFilePath = dbtRunner.getCompiledPath();
-      if (previousFileWatcher) {
-        previousFileWatcher.dispose();
-      }
-      const fileWatcher = vscode5.workspace.createFileSystemWatcher(new vscode5.RelativePattern(`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf("/"))}`, "**/*.sql"));
-      previousFileWatcher = fileWatcher;
+      const fileWatcher = dbtRunner.createFileWatcher();
       dbtRunner.compileDbtAndShowTerminal();
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
-        yield dbtRunner.runDbtAndRenderResults(uri, currentPanel, fileWatcher);
+        yield dbtRunner.runDbtAndRenderResults(uri, currentPanel);
       }));
       fileWatcher.onDidCreate((uri) => __async(this, null, function* () {
-        yield dbtRunner.runDbtAndRenderResults(uri, currentPanel, fileWatcher);
+        yield dbtRunner.runDbtAndRenderResults(uri, currentPanel);
       }));
     } catch (e) {
       vscode5.window.showErrorMessage(e);

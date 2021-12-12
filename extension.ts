@@ -37,41 +37,26 @@ function activate(context: vscode.ExtensionContext) {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
 			const fileName = dbtRunner.getFileName(filePath);
+
 			if (!fileName) {
 				vscode.window.showErrorMessage('No file found');
 				return;
 			}
-			const compiledFilePath = dbtRunner.getCompiledPath();
 			
-			// the reason we do this is because we are unable to track the
-			// state of the terminal. So, if dbt compile fails we are left
-			// with a dangling fileWatcher.
-			if (previousFileWatcher) {
-				previousFileWatcher.dispose();
-			}
-			const fileWatcher = vscode.workspace.createFileSystemWatcher(
-				new vscode.RelativePattern(
-					`${compiledFilePath.slice(0, compiledFilePath.lastIndexOf('/'))}`,
-					'**/*.sql'
-				)
-			);
-			previousFileWatcher = fileWatcher;
-
+			const fileWatcher = dbtRunner.createFileWatcher();
 			dbtRunner.compileDbtAndShowTerminal();
 
 			fileWatcher.onDidChange(async (uri) => {
 				await dbtRunner.runDbtAndRenderResults(
 					uri,
-					currentPanel,
-					fileWatcher
+					currentPanel
 				);
 			});
 
 			fileWatcher.onDidCreate(async (uri) => {
 				await dbtRunner.runDbtAndRenderResults(
 					uri,
-					currentPanel,
-					fileWatcher
+					currentPanel
 				);
 			});
 

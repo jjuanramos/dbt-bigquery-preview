@@ -12,6 +12,7 @@ export class DbtRunner {
     fileName: string | undefined;
     terminal: vscode.Terminal;
     compiledFilePath: string | undefined;
+    dbtFileWatcher: vscode.FileSystemWatcher;
 
     constructor(workspacePath: string, bigQueryRunner: bigquery.BigQueryRunner) {
         this.dbtProjectName = this.getDbtProjectName(workspacePath);
@@ -34,7 +35,7 @@ export class DbtRunner {
         }
     }
 
-    getFileName(filePath: string): string {
+    getFileName(filePath: string): string | undefined {
         const lastIndex = filePath.lastIndexOf('/');
         if (lastIndex === -1) {
             vscode.window.showErrorMessage("File not found");
@@ -47,7 +48,7 @@ export class DbtRunner {
         }
     }
 
-    getCompiledPath(): string {
+    getCompiledPath() {
         let dbtKind: string | undefined;
         let filePathSplitted: string[] | string | undefined;
         if (this.filePath.split('/models/').length > 1) {
@@ -61,7 +62,6 @@ export class DbtRunner {
         }
         const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/${dbtKind}/${filePathSplitted[1]}`;
         this.compiledFilePath = compiledFilePath;
-        return compiledFilePath;
     }
 
     getCompiledQuery(): string {
@@ -95,23 +95,37 @@ export class DbtRunner {
     }
 
     compileDbtAndShowTerminal() {
-        const terminal = this.selectTerminal();
-        this.terminal = terminal;
+        this.terminal = this.selectTerminal();
+        this.terminal.sendText(`dbt compile -s ${this.fileName}`);
+        this.terminal.show();
+    }
 
-        terminal.sendText(`dbt compile -s ${this.fileName}`);
-        terminal.show();
+    createFileWatcher(): vscode.FileSystemWatcher {
+        // If dbt compile fails we are left with a dangling fileWatcher.
+        // So, we have to make sure to dispose of any fileWatcher left.
+        if (this.dbtFileWatcher) {
+            this.dbtFileWatcher.dispose();
+        }
+        this.getCompiledPath();
+        this.dbtFileWatcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(
+                `${this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf('/'))}`,
+                '**/*.sql'
+            )
+        );
+
+        return this.dbtFileWatcher;
     }
 
     async getDbtQueryResults(uri: vscode.Uri): Promise<bigquery.QueryResult> {
-        const compiledFilePath = this.getCompiledPath();
-        if (uri.toString().includes(compiledFilePath)) {
+        if (uri.toString().includes(this.compiledFilePath)) {
             const compiledQuery = this.getCompiledQuery();
             const queryResult = await this.bigQueryRunner.query(compiledQuery);
             return queryResult;
         }
     }
 
-    async runDbtAndRenderResults(uri: vscode.Uri, currentPanel: resultsPanel.ResultsPanel, fileWatcher: vscode.FileSystemWatcher) {
+    async runDbtAndRenderResults(uri: vscode.Uri, currentPanel: resultsPanel.ResultsPanel) {
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             cancellable: true,
@@ -132,14 +146,14 @@ export class DbtRunner {
                     vscode.window.showInformationMessage(`${bytesMessage} processed`);
                     currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
                     this.terminal.hide();
-                    fileWatcher.dispose();
+                    this.dbtFileWatcher.dispose();
                     return;
                 } else {
-                    fileWatcher.dispose();
+                    this.dbtFileWatcher.dispose();
                     return;			
                 }
             } catch (e) {
-                fileWatcher.dispose();
+                this.dbtFileWatcher.dispose();
                 vscode.window.showErrorMessage(e);
             }
         });
