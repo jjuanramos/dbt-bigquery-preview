@@ -46826,6 +46826,7 @@ var ResultsPanel = class {
     const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
     const htmlWithData = new HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
     const htmlWithDataCleanedUp = htmlWithData.replace("null", "");
+    console.log(htmlWithDataCleanedUp);
     this._panel.webview.html = htmlWithDataCleanedUp;
   }
   dispose() {
@@ -46947,11 +46948,11 @@ var DbtRunner = class {
             const totalBytes = queryResult.info.totalBytesProcessed;
             let bytesMessage;
             if (totalBytes / 1073741824 >= 1) {
-              bytesMessage = `${totalBytes / 1073741824} GB`;
+              bytesMessage = `${Math.round(totalBytes / 1073741824)} GB`;
             } else if (totalBytes / 1048576 >= 1) {
-              bytesMessage = `${totalBytes / 1048576} MB`;
+              bytesMessage = `${Math.round(totalBytes / 1048576)} MB`;
             } else {
-              bytesMessage = `${totalBytes} bytes`;
+              bytesMessage = `${Math.round(totalBytes)} bytes`;
             }
             vscode4.window.showInformationMessage(`${bytesMessage} processed`);
             currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);

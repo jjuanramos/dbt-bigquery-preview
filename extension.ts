@@ -1,6 +1,5 @@
 // to do
-// 1. Roundup bytes message
-// 2. Test in Windows
+// 1. Test in Windows
 // 3. Write README.md
 // 4. Release!!
 

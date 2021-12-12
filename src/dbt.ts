@@ -123,11 +123,11 @@ export class DbtRunner {
                     const totalBytes = queryResult.info.totalBytesProcessed;
                     let bytesMessage;
                     if (totalBytes / 1073741824 >= 1) {
-                        bytesMessage = `${totalBytes / 1073741824} GB`;
+                        bytesMessage = `${Math.round(totalBytes / 1073741824)} GB`;
                     } else if (totalBytes / 1048576 >= 1) {
-                        bytesMessage = `${totalBytes / 1048576} MB`;
+                        bytesMessage = `${Math.round(totalBytes / 1048576)} MB`;
                     } else {
-                        bytesMessage = `${totalBytes} bytes`;
+                        bytesMessage = `${Math.round(totalBytes)} bytes`;
                     }
                     vscode.window.showInformationMessage(`${bytesMessage} processed`);
                     currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
