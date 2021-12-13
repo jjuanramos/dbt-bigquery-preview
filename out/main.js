@@ -46498,9 +46498,7 @@ var vscode = __toModule(require("vscode"));
 var google_auth = __toModule(require_src7());
 var GoogleAuth = class {
   constructor() {
-    this.clientId = "845129514279-njboj9fbrordd88a0p9hi5k6i0oepgn0.apps.googleusercontent.com";
     this.oAuth2Client = new google_auth.OAuth2Client({
-      clientId: this.clientId,
       redirectUri: "urn:ietf:wg:oauth:2.0:oob"
     });
   }
@@ -46529,7 +46527,6 @@ var GoogleAuth = class {
       const tokenInfo = yield this.oAuth2Client.getTokenInfo(this.oAuth2Client.credentials.access_token);
       vscode.window.showInformationMessage(`Successfully login to Google: ${JSON.stringify(tokenInfo, null, "  ")}`);
       const refreshClient = new google_auth.UserRefreshClient({
-        clientId: this.clientId,
         refreshToken: r.tokens.refresh_token
       });
       refreshClient.getRequestHeaders();
