@@ -11,7 +11,7 @@ Please let us know about any bugs or feature requests through the github issues.
 ## Requirements
 
 For dbt-bigquery-preview to work, you have to:
-- Be authenticated through the OAuth gcloud setup. dbt Labs have a tutorial on how to do so, link [here](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#local-oauth-gcloud-setup).
+- Be authenticated through the OAuth gcloud setup. If you haven't done so already, dbt Labs have a good tutorial [here](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#local-oauth-gcloud-setup).
 - Open vscode in a dbt project.
 
 ## Extension Settings
