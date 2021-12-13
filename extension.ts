@@ -11,7 +11,6 @@ import * as resultsPanel from './src/resultsPanel';
 import * as dbt from './src/dbt';
 
 let config: vscode.WorkspaceConfiguration;
-let previousFileWatcher: vscode.FileSystemWatcher;
 const configPrefix = 'dbt-bigquery-preview';
 const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 
