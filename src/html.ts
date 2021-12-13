@@ -49,14 +49,18 @@ export class HTMLResultsWrapper {
                 columnNames.includes("e") &&
                 columnNames.includes("constructor")
             ) {
-                const valueEndsAt = jsObject["e"];
-                const valueLength = jsObject["c"].length;
-                if ((valueEndsAt + 1) === valueLength) {
-                    content = jsObject["c"] ? jsObject["c"].join("") : '';
-                } else {
-                    const integerPart = jsObject["c"].slice(0, valueEndsAt + 1).join('');
-                    const decimals = jsObject["c"].slice(valueEndsAt + 1).join('');
+                const integerLength = jsObject['s'] + jsObject["e"];
+                const numberArray = jsObject['c'];
+                content = '';
+                if (numberArray.length < integerLength) {
+                    const numberOfZeros = integerLength - numberArray.length;
+                    content = numberArray.join('') + '0'.repeat(numberOfZeros);
+                } else if (numberArray.length > integerLength) {
+                    const integerPart = numberArray.slice(0, integerLength).join('');
+                    const decimals = numberArray.slice(integerLength).join('');
                     content = integerPart ? `${integerPart}.${decimals}` : '';
+                } else {
+                    content = numberArray.join('');
                 }
             } else if (columnNames.length === 0) {
                 content = "";

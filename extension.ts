@@ -1,5 +1,4 @@
 // to do
-// 1. Not working properly for ints like 1000, check out active_account_fees
 // 1. Test in Windows
 // 3. Write README.md
 // 4. Release!!

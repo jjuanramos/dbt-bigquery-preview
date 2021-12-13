@@ -1,5 +1,4 @@
 import * as google_auth from "./google_auth";
-import { GenerateAuthUrlOpts } from "google-auth-library";
 import * as vscode from 'vscode';
 import * as bigquery from '@google-cloud/bigquery';
 
