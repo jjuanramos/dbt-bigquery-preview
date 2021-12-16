@@ -6,13 +6,16 @@ Please let us know about any bugs or feature requests through the github issues.
 
 ## Features
 
-// TODO
+Go to the Command Palette (shortcut: Ctrl + Shift + P) and look for `dbt-bigquery-preview: Preview dbt results`. Click there and... wait for your results!
+
+![Example showcasing the extension](./media/preview.gif)
 
 ## Requirements
 
 For dbt-bigquery-preview to work, you have to:
 - Be authenticated through the OAuth gcloud setup. If you haven't done so already, dbt Labs have a good tutorial [here](https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile#local-oauth-gcloud-setup).
 - Open vscode in a dbt project.
+- dbt>=0.21.0
 
 ## Extension Settings
 
@@ -25,6 +28,7 @@ Both of these are mandatory if you want the extension to work. In order to set t
 
 ## Release Notes
 
-### 0.1.0
+### 0.1.0-beta
 
-Initial release of dbt-bigquery-preview!
+First release! Meant for testing. Will work on Linux/Mac, not so sure about Windows.
+Use under your own discretion!

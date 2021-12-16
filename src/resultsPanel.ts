@@ -37,10 +37,10 @@ export class ResultsPanel {
 
     // add styles.css and scripts.js to update here
     _update(queryData: string[]) {
-        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'collapsible.js');
+        const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'public', 'collapsible.js');
         const scriptUri = scriptPath.with({ 'scheme': 'vscode-resource'});
 
-        const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css');
+        const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'public', 'styles.css');
 		const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
 
         const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);

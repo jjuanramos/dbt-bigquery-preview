@@ -46821,9 +46821,9 @@ var ResultsPanel = class {
     }
   }
   _update(queryData) {
-    const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "media", "collapsible.js");
+    const scriptPath = vscode3.Uri.joinPath(this._extensionUri, "public", "collapsible.js");
     const scriptUri = scriptPath.with({ "scheme": "vscode-resource" });
-    const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "media", "styles.css");
+    const stylesPath = vscode3.Uri.joinPath(this._extensionUri, "public", "styles.css");
     const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
     const htmlWithData = new HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
     const htmlWithDataCleanedUp = htmlWithData.replace("null", "");

@@ -1,8 +1,3 @@
-// to do
-// 1. Test in Windows
-// 3. Write README.md
-// 4. Release!!
-
 import *  as vscode from 'vscode';
 
 import * as bigquery from './src/bigquery';
