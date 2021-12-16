@@ -1,10 +1,15 @@
 {
 	"name": "dbt-bigquery-preview",
 	"displayName": "dbt-bigquery-preview",
+	"publisher": "jjuanramos",
 	"description": "Run your dbt code and get a preview on vscode!",
-	"version": "0.0.1",
+	"version": "0.0.1-beta",
 	"engines": {
 		"vscode": "^1.46.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jjuanramos/dbt-bigquery-preview.git"
 	},
 	"categories": [
 		"Other"
