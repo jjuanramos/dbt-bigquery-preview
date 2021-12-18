@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
+import * as path from 'path';
 
 import * as resultsPanel from './resultsPanel';
 import * as bigquery from './bigquery';
@@ -25,8 +26,7 @@ export class DbtRunner {
 
     getDbtProjectName(workspacePath: string): string {
         try {
-            const file = fs.readFileSync(`${workspacePath}/dbt_project.yml`, 'utf-8');
-            // assumes the extension is opened in the dbt directory -> Document it
+            const file = fs.readFileSync(path.join(workspacePath, 'dbt_project.yml'), 'utf-8');
             const parsedFile = yaml.parse(file);
             const dbtProjectName = parsedFile.name;
             return dbtProjectName;
@@ -36,31 +36,37 @@ export class DbtRunner {
     }
 
     getFileName(filePath: string): string | undefined {
-        const lastIndex = filePath.lastIndexOf('/');
-        if (lastIndex === -1) {
-            vscode.window.showErrorMessage("File not found");
-            return;
-        } else {
-            const fileName = filePath.slice(lastIndex + 1, filePath.length).replace('.sql', '');
+        try{
+            const filePathParsed = path.parse(filePath);
+            const fileName = filePathParsed.name;
             this.filePath = filePath;
             this.fileName = fileName;
             return fileName;
+        } catch(e) {
+            vscode.window.showErrorMessage(`Error obtaining the file name: ${e}`);
         }
     }
 
     getCompiledPath() {
         let dbtKind: string | undefined;
         let filePathSplitted: string[] | string | undefined;
-        if (this.filePath.split('/models/').length > 1) {
-            filePathSplitted = this.filePath.split('/models/');
+        if (this.filePath.includes('models')) {
+            filePathSplitted = this.filePath.split(`${path.sep}models${path.sep}`);
             dbtKind = 'models';
-        } else if (this.filePath.split('/analysis/').length > 1) {
-            filePathSplitted = this.filePath.split('/analysis/');
+        } else if (this.filePath.includes('analysis')) {
+            filePathSplitted = this.filePath.split(`${path.sep}analysis${path.sep}`);
             dbtKind = 'analysis';
         } else {
             throw 'Compiled Path not found. Try again for a model or analysis.';
         }
-        const compiledFilePath = `${filePathSplitted[0]}/target/compiled/${this.dbtProjectName}/${dbtKind}/${filePathSplitted[1]}`;
+        const compiledFilePath = path.join(
+            filePathSplitted[0],
+            'target',
+            'compiled',
+            this.dbtProjectName,
+            dbtKind,
+            filePathSplitted[1]
+        );
         this.compiledFilePath = compiledFilePath;
     }
 
@@ -109,7 +115,7 @@ export class DbtRunner {
         this.getCompiledPath();
         this.dbtFileWatcher = vscode.workspace.createFileSystemWatcher(
             new vscode.RelativePattern(
-                `${this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf('/'))}`,
+                `${this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf(path.sep))}`,
                 '**/*.sql'
             )
         );

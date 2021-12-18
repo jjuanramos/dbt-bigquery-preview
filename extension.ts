@@ -30,7 +30,7 @@ function activate(context: vscode.ExtensionContext) {
 		try {
 			const filePath = vscode.window.activeTextEditor.document.fileName;
 			const fileName = dbtRunner.getFileName(filePath);
-
+			
 			if (!fileName) {
 				vscode.window.showErrorMessage('No file found');
 				return;
