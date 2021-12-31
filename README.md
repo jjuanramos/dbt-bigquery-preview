@@ -29,7 +29,11 @@ Both of these are mandatory if you want the extension to work. In order to set t
 
 ## Release Notes
 
-### 0.1.0-beta
+### 0.1.0
 
 First release! Meant for testing. Will work on Linux/Mac, not so sure about Windows.
 Use under your own discretion!
+
+### 0.2.0
+
+Fixed bug related to how the results were rendered.
