@@ -46856,15 +46856,13 @@ var DbtRunner = class {
   }
   getDbtProjectName(workspacePath2) {
     try {
-      console.log(workspacePath2);
       const resolvedPath = path.resolve(workspacePath2, "dbt_project.yml");
-      console.log(`resolvedPath: ${resolvedPath}`);
       const file = fs.readFileSync(resolvedPath, "utf-8");
       const parsedFile = yaml.parse(file);
       const dbtProjectName = parsedFile.name;
       return dbtProjectName;
     } catch (e) {
-      vscode4.window.showErrorMessage(e);
+      vscode4.window.showErrorMessage(`Error obtaining the dbt project name: ${e}`);
     }
   }
   getFileName(filePath) {
@@ -46931,7 +46929,9 @@ var DbtRunner = class {
       this.dbtFileWatcher.dispose();
     }
     this.getCompiledPath();
-    this.dbtFileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf(path.sep))}`, "**/*.sql"));
+    const fileSystemPath = this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf(path.sep));
+    this.dbtFileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${fileSystemPath}`, "**/*.sql"));
+    console.log(`fileSystemPath: ${fileSystemPath}`);
     return this.dbtFileWatcher;
   }
   getDbtQueryResults(uri) {
@@ -47006,6 +47006,7 @@ function activate(context) {
       }
       const fileWatcher = dbtRunner.createFileWatcher();
       dbtRunner.compileDbtAndShowTerminal();
+      console.log("we got here!");
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
         yield dbtRunner.runDbtAndRenderResults(uri, currentPanel);
       }));

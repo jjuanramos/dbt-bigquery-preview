@@ -114,13 +114,13 @@ export class DbtRunner {
             this.dbtFileWatcher.dispose();
         }
         this.getCompiledPath();
+        const fileSystemPath = this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf(path.sep));
         this.dbtFileWatcher = vscode.workspace.createFileSystemWatcher(
             new vscode.RelativePattern(
-                `${this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf(path.sep))}`,
+                `${fileSystemPath}`,
                 '**/*.sql'
             )
         );
-
         return this.dbtFileWatcher;
     }
 
