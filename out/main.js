@@ -46856,7 +46856,10 @@ var DbtRunner = class {
   }
   getDbtProjectName(workspacePath2) {
     try {
-      const file = fs.readFileSync(path.resolve(workspacePath2, "/dbt_project.yml"), "utf-8");
+      console.log(workspacePath2);
+      const resolvedPath = path.resolve(workspacePath2, "dbt_project.yml");
+      console.log(`resolvedPath: ${resolvedPath}`);
+      const file = fs.readFileSync(resolvedPath, "utf-8");
       const parsedFile = yaml.parse(file);
       const dbtProjectName = parsedFile.name;
       return dbtProjectName;

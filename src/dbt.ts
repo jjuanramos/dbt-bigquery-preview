@@ -26,12 +26,13 @@ export class DbtRunner {
 
     getDbtProjectName(workspacePath: string): string {
         try {
-            const file = fs.readFileSync(path.resolve(workspacePath, 'dbt_project.yml'), 'utf-8');
+            const resolvedPath = path.resolve(workspacePath, 'dbt_project.yml');
+            const file = fs.readFileSync(resolvedPath, 'utf-8');
             const parsedFile = yaml.parse(file);
             const dbtProjectName = parsedFile.name;
             return dbtProjectName;
         } catch(e) {
-            vscode.window.showErrorMessage(e);
+            vscode.window.showErrorMessage(`Error obtaining the dbt project name: ${e}`);
         }
     }
 
