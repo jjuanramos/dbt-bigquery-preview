@@ -26,12 +26,12 @@ export class DbtRunner {
 
     getDbtProjectName(workspacePath: string): string {
         try {
-            const file = fs.readFileSync(path.join(workspacePath, 'dbt_project.yml'), 'utf-8');
+            const file = fs.readFileSync(path.resolve(workspacePath, 'dbt_project.yml'), 'utf-8');
             const parsedFile = yaml.parse(file);
             const dbtProjectName = parsedFile.name;
             return dbtProjectName;
         } catch(e) {
-            vscode.window.showErrorMessage("For the extension to work, you must use it in a repository with a dbt_project.yml file");
+            vscode.window.showErrorMessage(e);
         }
     }
 
