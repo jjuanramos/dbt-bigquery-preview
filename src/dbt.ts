@@ -60,7 +60,7 @@ export class DbtRunner {
         } else {
             throw 'Compiled Path not found. Try again for a model or analysis.';
         }
-        const compiledFilePath = path.join(
+        const compiledFilePath = path.resolve(
             filePathSplitted[0],
             'target',
             'compiled',
@@ -73,7 +73,7 @@ export class DbtRunner {
 
     getCompiledQuery(): string {
         const compiledQuery = fs.readFileSync(this.compiledFilePath, 'utf-8');
-        return compiledQuery + ' limit 100';
+        return compiledQuery + '\nlimit 100';
     }
 
     selectTerminal(): vscode.Terminal {

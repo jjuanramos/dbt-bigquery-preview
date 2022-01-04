@@ -33594,7 +33594,7 @@ var require_buffer_list = __commonJS({
         }
       }, {
         key: "join",
-        value: function join2(s) {
+        value: function join(s) {
           if (this.length === 0)
             return "";
           var p = this.head;
@@ -46888,12 +46888,12 @@ var DbtRunner = class {
     } else {
       throw "Compiled Path not found. Try again for a model or analysis.";
     }
-    const compiledFilePath = path.join(filePathSplitted[0], "target", "compiled", this.dbtProjectName, dbtKind, filePathSplitted[1]);
+    const compiledFilePath = path.resolve(filePathSplitted[0], "target", "compiled", this.dbtProjectName, dbtKind, filePathSplitted[1]);
     this.compiledFilePath = compiledFilePath;
   }
   getCompiledQuery() {
     const compiledQuery = fs.readFileSync(this.compiledFilePath, "utf-8");
-    return compiledQuery + " limit 100";
+    return compiledQuery + "\nlimit 100";
   }
   selectTerminal() {
     let terminalExists = false;
@@ -46931,7 +46931,6 @@ var DbtRunner = class {
     this.getCompiledPath();
     const fileSystemPath = this.compiledFilePath.slice(0, this.compiledFilePath.lastIndexOf(path.sep));
     this.dbtFileWatcher = vscode4.workspace.createFileSystemWatcher(new vscode4.RelativePattern(`${fileSystemPath}`, "**/*.sql"));
-    console.log(`fileSystemPath: ${fileSystemPath}`);
     return this.dbtFileWatcher;
   }
   getDbtQueryResults(uri) {
@@ -47006,7 +47005,6 @@ function activate(context) {
       }
       const fileWatcher = dbtRunner.createFileWatcher();
       dbtRunner.compileDbtAndShowTerminal();
-      console.log("we got here!");
       fileWatcher.onDidChange((uri) => __async(this, null, function* () {
         yield dbtRunner.runDbtAndRenderResults(uri, currentPanel);
       }));
