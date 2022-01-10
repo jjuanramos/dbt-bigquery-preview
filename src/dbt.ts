@@ -26,8 +26,9 @@ export class DbtRunner {
 
     getDbtProjectName(workspacePath: string): string {
         try {
-            const resolvedPath = path.resolve(workspacePath, 'dbt_project.yml');
-            const file = fs.readFileSync(resolvedPath, 'utf-8');
+            let joinedPath = path.join(workspacePath, 'dbt_project.yml');
+            joinedPath = joinedPath.replace(/^(\c:)/, "C:"); // for Windows
+            const file = fs.readFileSync(joinedPath, 'utf-8');
             const parsedFile = yaml.parse(file);
             const dbtProjectName = parsedFile.name;
             return dbtProjectName;
@@ -60,7 +61,7 @@ export class DbtRunner {
         } else {
             throw 'Compiled Path not found. Try again for a model or analysis.';
         }
-        const compiledFilePath = path.resolve(
+        let compiledFilePath = path.join(
             filePathSplitted[0],
             'target',
             'compiled',
@@ -68,6 +69,7 @@ export class DbtRunner {
             dbtKind,
             filePathSplitted[1]
         );
+        compiledFilePath = compiledFilePath.replace(/^(\c:)/, "C:"); // for Windows
         this.compiledFilePath = compiledFilePath;
     }
 
