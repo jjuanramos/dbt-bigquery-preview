@@ -2,10 +2,13 @@ import * as vscode from 'vscode';
 import * as google_auth from 'google-auth-library';
 
 export class GoogleAuth {
+    clientId: string;
     oAuth2Client: google_auth.OAuth2Client;
 
     constructor() {
+        this.clientId = "845129514279-njboj9fbrordd88a0p9hi5k6i0oepgn0.apps.googleusercontent.com";
         this.oAuth2Client = new google_auth.OAuth2Client({
+        clientId: this.clientId,
         redirectUri: "urn:ietf:wg:oauth:2.0:oob"
         });
     }
@@ -44,6 +47,7 @@ export class GoogleAuth {
       vscode.window.showInformationMessage(`Successfully login to Google: ${JSON.stringify(tokenInfo, null, "  ")}`);
   
       const refreshClient = new google_auth.UserRefreshClient({
+        clientId: this.clientId,
         refreshToken: r.tokens.refresh_token
       });
       refreshClient.getRequestHeaders();

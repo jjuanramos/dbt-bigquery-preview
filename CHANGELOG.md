@@ -15,3 +15,7 @@ Fixed bug related to queries output not being limited to 100 if the final line o
 ### 0.0.7
 
 Fixed path for working on Windows
+
+# 0.0.8
+
+Added clientId to ease working with BigQuery
