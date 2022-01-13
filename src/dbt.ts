@@ -24,10 +24,14 @@ export class DbtRunner {
         this.bigQueryRunner.setConfig(config);
     }
 
+    private windowsAdapter(s: string): string {
+        return s.replace(/(^\c:)/, "C:").replace(/(^\\)/, ""); // for Windows
+    }
+
     getDbtProjectName(workspacePath: string): string {
         try {
             let joinedPath = path.join(workspacePath, 'dbt_project.yml');
-            joinedPath = joinedPath.replace(/^(\c:)/, "C:"); // for Windows
+            joinedPath = this.windowsAdapter(joinedPath);
             const file = fs.readFileSync(joinedPath, 'utf-8');
             const parsedFile = yaml.parse(file);
             const dbtProjectName = parsedFile.name;
@@ -69,13 +73,18 @@ export class DbtRunner {
             dbtKind,
             filePathSplitted[1]
         );
-        compiledFilePath = compiledFilePath.replace(/^(\c:)/, "C:"); // for Windows
-        this.compiledFilePath = compiledFilePath;
+        vscode.window.showInformationMessage(`compiledFilePath before adapter: ${compiledFilePath}`);
+        this.compiledFilePath = this.windowsAdapter(compiledFilePath);
     }
 
     getCompiledQuery(): string {
-        const compiledQuery = fs.readFileSync(this.compiledFilePath, 'utf-8');
-        return compiledQuery + '\nlimit 100';
+        try {
+            vscode.window.showInformationMessage(`compiled file path is ${this.compiledFilePath}`);
+            const compiledQuery = fs.readFileSync(this.compiledFilePath, 'utf-8');
+            return compiledQuery + '\nlimit 100';
+        } catch(e) {
+            vscode.window.showErrorMessage(e);
+        }
     }
 
     selectTerminal(): vscode.Terminal {
@@ -127,20 +136,34 @@ export class DbtRunner {
     }
 
     async getDbtQueryResults(uri: vscode.Uri): Promise<bigquery.QueryResult> {
-        if (uri.toString().includes(this.compiledFilePath)) {
-            const compiledQuery = this.getCompiledQuery();
-            const queryResult = await this.bigQueryRunner.query(compiledQuery);
-            return queryResult;
+        try{
+            const normalizedUri = path.normalize(uri.toString());
+            if (
+                normalizedUri.slice(normalizedUri.lastIndexOf('target'))
+                .includes(
+                    this.compiledFilePath.slice(this.compiledFilePath.lastIndexOf('target'))
+                )
+            ) {
+                vscode.window.showInformationMessage("They are equals!");
+                const compiledQuery = this.getCompiledQuery();
+                const queryResult = await this.bigQueryRunner.query(compiledQuery);
+                return queryResult;
+            } else {
+                throw "File not found in the target folder";
+            }
+        } catch(e) {
+            vscode.window.showErrorMessage(e);
         }
     }
 
     async runDbtAndRenderResults(uri: vscode.Uri, currentPanel: resultsPanel.ResultsPanel) {
-        vscode.window.withProgress({
+        await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             cancellable: true,
             title: 'Waiting for BigQuery to run the code...'
         }, async() => {
             try {
+                this.dbtFileWatcher.dispose();
                 const queryResult = await this.getDbtQueryResults(uri);
                 if (queryResult.status === "success") {
                     const totalBytes = queryResult.info.totalBytesProcessed;
@@ -155,14 +178,11 @@ export class DbtRunner {
                     vscode.window.showInformationMessage(`${bytesMessage} processed`);
                     currentPanel.createOrUpdateDataHTMLPanel(queryResult.data);
                     this.terminal.hide();
-                    this.dbtFileWatcher.dispose();
                     return;
                 } else {
-                    this.dbtFileWatcher.dispose();
                     return;			
                 }
             } catch (e) {
-                this.dbtFileWatcher.dispose();
                 vscode.window.showErrorMessage(e);
             }
         });
