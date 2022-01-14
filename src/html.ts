@@ -68,14 +68,14 @@ export class HTMLResultsWrapper {
                 for (const columnName of columnNames) {
                     let columnContent = jsObject[columnName];
                     content += `
-                    ${columnName}: ${columnContent ? columnContent : ''},<br><br>
+                    ${columnName}: ${columnContent ? columnContent : '<i>null</i>'},<br><br>
                     `;
                 }
                 content = `
                 <div class="collapsible">
-                    <p>
-                        { ... }
-                    </p>
+                    <button>
+                        ▶ { ... }
+                    </button>
                 </div>
                 <div class="content">
                     <br>
@@ -146,7 +146,7 @@ export class HTMLResultsWrapper {
                     const htmlContent = this.wrapJSObject(row[name]);
                     htmlRow += htmlContent;
                 }else {
-                    htmlRow += `<td>${row[name] ? row[name] : ''}</td>`;
+                    htmlRow += `<td>${row[name] ? row[name] : '<i>null</i>'}</td>`;
                 }
             }
             htmlRow += '</tr>';
@@ -162,7 +162,7 @@ export class HTMLResultsWrapper {
                 const htmlContent = this.wrapJSObject(row[name]);
                 htmlRow += htmlContent;
             } else {
-                htmlRow += `<td>${row[name] ? row[name] : ''}</td>`;
+                htmlRow += `<td>${row[name] ? row[name] : '<i>null</i>'}</td>`;
             }
         }
         htmlRow += '</tr>';
