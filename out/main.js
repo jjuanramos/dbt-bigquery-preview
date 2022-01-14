@@ -9903,133 +9903,6 @@ var require_util = __commonJS({
     util.clearItems = function(api, id, location) {
       _callStorageFunction(_clearItems, arguments, location);
     };
-    util.parseUrl = function(str) {
-      var regex = /^(https?):\/\/([^:&^\/]*):?(\d*)(.*)$/g;
-      regex.lastIndex = 0;
-      var m = regex.exec(str);
-      var url = m === null ? null : {
-        full: str,
-        scheme: m[1],
-        host: m[2],
-        port: m[3],
-        path: m[4]
-      };
-      if (url) {
-        url.fullHost = url.host;
-        if (url.port) {
-          if (url.port !== 80 && url.scheme === "http") {
-            url.fullHost += ":" + url.port;
-          } else if (url.port !== 443 && url.scheme === "https") {
-            url.fullHost += ":" + url.port;
-          }
-        } else if (url.scheme === "http") {
-          url.port = 80;
-        } else if (url.scheme === "https") {
-          url.port = 443;
-        }
-        url.full = url.scheme + "://" + url.fullHost;
-      }
-      return url;
-    };
-    var _queryVariables = null;
-    util.getQueryVariables = function(query) {
-      var parse3 = function(q) {
-        var rval2 = {};
-        var kvpairs = q.split("&");
-        for (var i = 0; i < kvpairs.length; i++) {
-          var pos = kvpairs[i].indexOf("=");
-          var key;
-          var val;
-          if (pos > 0) {
-            key = kvpairs[i].substring(0, pos);
-            val = kvpairs[i].substring(pos + 1);
-          } else {
-            key = kvpairs[i];
-            val = null;
-          }
-          if (!(key in rval2)) {
-            rval2[key] = [];
-          }
-          if (!(key in Object.prototype) && val !== null) {
-            rval2[key].push(unescape(val));
-          }
-        }
-        return rval2;
-      };
-      var rval;
-      if (typeof query === "undefined") {
-        if (_queryVariables === null) {
-          if (typeof window !== "undefined" && window.location && window.location.search) {
-            _queryVariables = parse3(window.location.search.substring(1));
-          } else {
-            _queryVariables = {};
-          }
-        }
-        rval = _queryVariables;
-      } else {
-        rval = parse3(query);
-      }
-      return rval;
-    };
-    util.parseFragment = function(fragment) {
-      var fp = fragment;
-      var fq = "";
-      var pos = fragment.indexOf("?");
-      if (pos > 0) {
-        fp = fragment.substring(0, pos);
-        fq = fragment.substring(pos + 1);
-      }
-      var path2 = fp.split("/");
-      if (path2.length > 0 && path2[0] === "") {
-        path2.shift();
-      }
-      var query = fq === "" ? {} : util.getQueryVariables(fq);
-      return {
-        pathString: fp,
-        queryString: fq,
-        path: path2,
-        query
-      };
-    };
-    util.makeRequest = function(reqString) {
-      var frag = util.parseFragment(reqString);
-      var req = {
-        path: frag.pathString,
-        query: frag.queryString,
-        getPath: function(i) {
-          return typeof i === "undefined" ? frag.path : frag.path[i];
-        },
-        getQuery: function(k, i) {
-          var rval;
-          if (typeof k === "undefined") {
-            rval = frag.query;
-          } else {
-            rval = frag.query[k];
-            if (rval && typeof i !== "undefined") {
-              rval = rval[i];
-            }
-          }
-          return rval;
-        },
-        getQueryLast: function(k, _default) {
-          var rval;
-          var vals = req.getQuery(k);
-          if (vals) {
-            rval = vals[vals.length - 1];
-          } else {
-            rval = _default;
-          }
-          return rval;
-        }
-      };
-      return req;
-    };
-    util.makeLink = function(path2, query, fragment) {
-      path2 = jQuery.isArray(path2) ? path2.join("/") : path2;
-      var qstr = jQuery.param(query || {});
-      fragment = fragment || "";
-      return path2 + (qstr.length > 0 ? "?" + qstr : "") + (fragment.length > 0 ? "#" + fragment : "");
-    };
     util.isEmpty = function(obj) {
       for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -11322,6 +11195,7 @@ var require_oids = __commonJS({
     _IN("1.2.840.10040.4.3", "dsa-with-sha1");
     _IN("1.3.14.3.2.7", "desCBC");
     _IN("1.3.14.3.2.26", "sha1");
+    _IN("1.3.14.3.2.29", "sha1WithRSASignature");
     _IN("2.16.840.1.101.3.4.2.1", "sha256");
     _IN("2.16.840.1.101.3.4.2.2", "sha384");
     _IN("2.16.840.1.101.3.4.2.3", "sha512");
@@ -11368,16 +11242,19 @@ var require_oids = __commonJS({
     _IN("2.16.840.1.101.3.4.1.22", "aes192-CBC");
     _IN("2.16.840.1.101.3.4.1.42", "aes256-CBC");
     _IN("2.5.4.3", "commonName");
-    _IN("2.5.4.5", "serialName");
+    _IN("2.5.4.4", "surname");
+    _IN("2.5.4.5", "serialNumber");
     _IN("2.5.4.6", "countryName");
     _IN("2.5.4.7", "localityName");
     _IN("2.5.4.8", "stateOrProvinceName");
     _IN("2.5.4.9", "streetAddress");
     _IN("2.5.4.10", "organizationName");
     _IN("2.5.4.11", "organizationalUnitName");
+    _IN("2.5.4.12", "title");
     _IN("2.5.4.13", "description");
     _IN("2.5.4.15", "businessCategory");
     _IN("2.5.4.17", "postalCode");
+    _IN("2.5.4.42", "givenName");
     _IN("1.3.6.1.4.1.311.60.2.1.2", "jurisdictionOfIncorporationStateOrProvinceName");
     _IN("1.3.6.1.4.1.311.60.2.1.3", "jurisdictionOfIncorporationCountryName");
     _IN("2.16.840.1.113730.1.1", "nsCertType");
@@ -12611,8 +12488,12 @@ var require_pem = __commonJS({
         if (!match) {
           break;
         }
+        var type = match[1];
+        if (type === "NEW CERTIFICATE REQUEST") {
+          type = "CERTIFICATE REQUEST";
+        }
         var msg = {
-          type: match[1],
+          type,
           procType: null,
           contentDomain: null,
           dekInfo: null,
@@ -13455,7 +13336,7 @@ var require_prng = __commonJS({
             for (var i2 = 0; i2 < 3; ++i2) {
               next = seed >>> (i2 << 3);
               next ^= Math.floor(Math.random() * 256);
-              b.putByte(String.fromCharCode(next & 255));
+              b.putByte(next & 255);
             }
           }
         }
@@ -17812,7 +17693,8 @@ var require_pkcs7asn1 = __commonJS({
           name: "RecipientInfo.keyEncryptionAlgorithm.parameter",
           tagClass: asn1.Class.UNIVERSAL,
           constructed: false,
-          captureAsn1: "encParameter"
+          captureAsn1: "encParameter",
+          optional: true
         }]
       }, {
         name: "RecipientInfo.encryptedKey",
@@ -18456,6 +18338,63 @@ var require_x509 = __commonJS({
       }
       return params;
     };
+    var _createSignatureDigest = function(options) {
+      switch (oids[options.signatureOid]) {
+        case "sha1WithRSAEncryption":
+        case "sha1WithRSASignature":
+          return forge.md.sha1.create();
+        case "md5WithRSAEncryption":
+          return forge.md.md5.create();
+        case "sha256WithRSAEncryption":
+          return forge.md.sha256.create();
+        case "sha384WithRSAEncryption":
+          return forge.md.sha384.create();
+        case "sha512WithRSAEncryption":
+          return forge.md.sha512.create();
+        case "RSASSA-PSS":
+          return forge.md.sha256.create();
+        default:
+          var error = new Error("Could not compute " + options.type + " digest. Unknown signature OID.");
+          error.signatureOid = options.signatureOid;
+          throw error;
+      }
+    };
+    var _verifySignature = function(options) {
+      var cert = options.certificate;
+      var scheme;
+      switch (cert.signatureOid) {
+        case oids.sha1WithRSAEncryption:
+        case oids.sha1WithRSASignature:
+          break;
+        case oids["RSASSA-PSS"]:
+          var hash, mgf;
+          hash = oids[cert.signatureParameters.mgf.hash.algorithmOid];
+          if (hash === void 0 || forge.md[hash] === void 0) {
+            var error = new Error("Unsupported MGF hash function.");
+            error.oid = cert.signatureParameters.mgf.hash.algorithmOid;
+            error.name = hash;
+            throw error;
+          }
+          mgf = oids[cert.signatureParameters.mgf.algorithmOid];
+          if (mgf === void 0 || forge.mgf[mgf] === void 0) {
+            var error = new Error("Unsupported MGF function.");
+            error.oid = cert.signatureParameters.mgf.algorithmOid;
+            error.name = mgf;
+            throw error;
+          }
+          mgf = forge.mgf[mgf].create(forge.md[hash].create());
+          hash = oids[cert.signatureParameters.hash.algorithmOid];
+          if (hash === void 0 || forge.md[hash] === void 0) {
+            var error = new Error("Unsupported RSASSA-PSS hash function.");
+            error.oid = cert.signatureParameters.hash.algorithmOid;
+            error.name = hash;
+            throw error;
+          }
+          scheme = forge.pss.create(forge.md[hash].create(), mgf, cert.signatureParameters.saltLength);
+          break;
+      }
+      return cert.publicKey.verify(options.md.digest().getBytes(), options.signature, scheme);
+    };
     pki.certificateFromPem = function(pem, computeHash, strict) {
       var msg = forge.pem.decode(pem)[0];
       if (msg.type !== "CERTIFICATE" && msg.type !== "X509 CERTIFICATE" && msg.type !== "TRUSTED CERTIFICATE") {
@@ -18648,79 +18587,26 @@ var require_x509 = __commonJS({
           var issuer = child.issuer;
           var subject = cert.subject;
           var error = new Error("The parent certificate did not issue the given child certificate; the child certificate's issuer does not match the parent's subject.");
-          error.expectedIssuer = issuer.attributes;
-          error.actualIssuer = subject.attributes;
+          error.expectedIssuer = subject.attributes;
+          error.actualIssuer = issuer.attributes;
           throw error;
         }
         var md = child.md;
         if (md === null) {
-          if (child.signatureOid in oids) {
-            var oid = oids[child.signatureOid];
-            switch (oid) {
-              case "sha1WithRSAEncryption":
-                md = forge.md.sha1.create();
-                break;
-              case "md5WithRSAEncryption":
-                md = forge.md.md5.create();
-                break;
-              case "sha256WithRSAEncryption":
-                md = forge.md.sha256.create();
-                break;
-              case "sha384WithRSAEncryption":
-                md = forge.md.sha384.create();
-                break;
-              case "sha512WithRSAEncryption":
-                md = forge.md.sha512.create();
-                break;
-              case "RSASSA-PSS":
-                md = forge.md.sha256.create();
-                break;
-            }
-          }
-          if (md === null) {
-            var error = new Error("Could not compute certificate digest. Unknown signature OID.");
-            error.signatureOid = child.signatureOid;
-            throw error;
-          }
+          md = _createSignatureDigest({
+            signatureOid: child.signatureOid,
+            type: "certificate"
+          });
           var tbsCertificate = child.tbsCertificate || pki.getTBSCertificate(child);
           var bytes = asn1.toDer(tbsCertificate);
           md.update(bytes.getBytes());
         }
         if (md !== null) {
-          var scheme;
-          switch (child.signatureOid) {
-            case oids.sha1WithRSAEncryption:
-              scheme = void 0;
-              break;
-            case oids["RSASSA-PSS"]:
-              var hash, mgf;
-              hash = oids[child.signatureParameters.mgf.hash.algorithmOid];
-              if (hash === void 0 || forge.md[hash] === void 0) {
-                var error = new Error("Unsupported MGF hash function.");
-                error.oid = child.signatureParameters.mgf.hash.algorithmOid;
-                error.name = hash;
-                throw error;
-              }
-              mgf = oids[child.signatureParameters.mgf.algorithmOid];
-              if (mgf === void 0 || forge.mgf[mgf] === void 0) {
-                var error = new Error("Unsupported MGF function.");
-                error.oid = child.signatureParameters.mgf.algorithmOid;
-                error.name = mgf;
-                throw error;
-              }
-              mgf = forge.mgf[mgf].create(forge.md[hash].create());
-              hash = oids[child.signatureParameters.hash.algorithmOid];
-              if (hash === void 0 || forge.md[hash] === void 0) {
-                throw {
-                  message: "Unsupported RSASSA-PSS hash function.",
-                  oid: child.signatureParameters.hash.algorithmOid,
-                  name: hash
-                };
-              }
-              scheme = forge.pss.create(forge.md[hash].create(), mgf, child.signatureParameters.saltLength);
-              break;
-          }
-          rval = cert.publicKey.verify(md.digest().getBytes(), child.signature, scheme);
+          rval = _verifySignature({
+            certificate: cert,
+            md,
+            signature: child.signature
+          });
         }
         return rval;
       };
@@ -18806,39 +18692,16 @@ var require_x509 = __commonJS({
       cert.validity.notAfter = validity[1];
       cert.tbsCertificate = capture.tbsCertificate;
       if (computeHash) {
-        cert.md = null;
-        if (cert.signatureOid in oids) {
-          var oid = oids[cert.signatureOid];
-          switch (oid) {
-            case "sha1WithRSAEncryption":
-              cert.md = forge.md.sha1.create();
-              break;
-            case "md5WithRSAEncryption":
-              cert.md = forge.md.md5.create();
-              break;
-            case "sha256WithRSAEncryption":
-              cert.md = forge.md.sha256.create();
-              break;
-            case "sha384WithRSAEncryption":
-              cert.md = forge.md.sha384.create();
-              break;
-            case "sha512WithRSAEncryption":
-              cert.md = forge.md.sha512.create();
-              break;
-            case "RSASSA-PSS":
-              cert.md = forge.md.sha256.create();
-              break;
-          }
-        }
-        if (cert.md === null) {
-          var error = new Error("Could not compute certificate digest. Unknown signature OID.");
-          error.signatureOid = cert.signatureOid;
-          throw error;
-        }
+        cert.md = _createSignatureDigest({
+          signatureOid: cert.signatureOid,
+          type: "certificate"
+        });
         var bytes = asn1.toDer(cert.tbsCertificate);
         cert.md.update(bytes.getBytes());
       }
       var imd = forge.md.sha1.create();
+      var ibytes = asn1.toDer(capture.certIssuer);
+      imd.update(ibytes.getBytes());
       cert.issuer.getField = function(sn) {
         return _getAttribute(cert.issuer, sn);
       };
@@ -18846,12 +18709,14 @@ var require_x509 = __commonJS({
         _fillMissingFields([attr]);
         cert.issuer.attributes.push(attr);
       };
-      cert.issuer.attributes = pki.RDNAttributesAsArray(capture.certIssuer, imd);
+      cert.issuer.attributes = pki.RDNAttributesAsArray(capture.certIssuer);
       if (capture.certIssuerUniqueId) {
         cert.issuer.uniqueId = capture.certIssuerUniqueId;
       }
       cert.issuer.hash = imd.digest().toHex();
       var smd = forge.md.sha1.create();
+      var sbytes = asn1.toDer(capture.certSubject);
+      smd.update(sbytes.getBytes());
       cert.subject.getField = function(sn) {
         return _getAttribute(cert.subject, sn);
       };
@@ -18859,7 +18724,7 @@ var require_x509 = __commonJS({
         _fillMissingFields([attr]);
         cert.subject.attributes.push(attr);
       };
-      cert.subject.attributes = pki.RDNAttributesAsArray(capture.certSubject, smd);
+      cert.subject.attributes = pki.RDNAttributesAsArray(capture.certSubject);
       if (capture.certSubjectUniqueId) {
         cert.subject.uniqueId = capture.certSubjectUniqueId;
       }
@@ -19004,35 +18869,10 @@ var require_x509 = __commonJS({
       csr.signature = capture.csrSignature;
       csr.certificationRequestInfo = capture.certificationRequestInfo;
       if (computeHash) {
-        csr.md = null;
-        if (csr.signatureOid in oids) {
-          var oid = oids[csr.signatureOid];
-          switch (oid) {
-            case "sha1WithRSAEncryption":
-              csr.md = forge.md.sha1.create();
-              break;
-            case "md5WithRSAEncryption":
-              csr.md = forge.md.md5.create();
-              break;
-            case "sha256WithRSAEncryption":
-              csr.md = forge.md.sha256.create();
-              break;
-            case "sha384WithRSAEncryption":
-              csr.md = forge.md.sha384.create();
-              break;
-            case "sha512WithRSAEncryption":
-              csr.md = forge.md.sha512.create();
-              break;
-            case "RSASSA-PSS":
-              csr.md = forge.md.sha256.create();
-              break;
-          }
-        }
-        if (csr.md === null) {
-          var error = new Error("Could not compute certification request digest. Unknown signature OID.");
-          error.signatureOid = csr.signatureOid;
-          throw error;
-        }
+        csr.md = _createSignatureDigest({
+          signatureOid: csr.signatureOid,
+          type: "certification request"
+        });
         var bytes = asn1.toDer(csr.certificationRequestInfo);
         csr.md.update(bytes.getBytes());
       }
@@ -19111,71 +18951,20 @@ var require_x509 = __commonJS({
         var rval = false;
         var md = csr.md;
         if (md === null) {
-          if (csr.signatureOid in oids) {
-            var oid = oids[csr.signatureOid];
-            switch (oid) {
-              case "sha1WithRSAEncryption":
-                md = forge.md.sha1.create();
-                break;
-              case "md5WithRSAEncryption":
-                md = forge.md.md5.create();
-                break;
-              case "sha256WithRSAEncryption":
-                md = forge.md.sha256.create();
-                break;
-              case "sha384WithRSAEncryption":
-                md = forge.md.sha384.create();
-                break;
-              case "sha512WithRSAEncryption":
-                md = forge.md.sha512.create();
-                break;
-              case "RSASSA-PSS":
-                md = forge.md.sha256.create();
-                break;
-            }
-          }
-          if (md === null) {
-            var error = new Error("Could not compute certification request digest. Unknown signature OID.");
-            error.signatureOid = csr.signatureOid;
-            throw error;
-          }
+          md = _createSignatureDigest({
+            signatureOid: csr.signatureOid,
+            type: "certification request"
+          });
           var cri = csr.certificationRequestInfo || pki.getCertificationRequestInfo(csr);
           var bytes = asn1.toDer(cri);
           md.update(bytes.getBytes());
         }
         if (md !== null) {
-          var scheme;
-          switch (csr.signatureOid) {
-            case oids.sha1WithRSAEncryption:
-              break;
-            case oids["RSASSA-PSS"]:
-              var hash, mgf;
-              hash = oids[csr.signatureParameters.mgf.hash.algorithmOid];
-              if (hash === void 0 || forge.md[hash] === void 0) {
-                var error = new Error("Unsupported MGF hash function.");
-                error.oid = csr.signatureParameters.mgf.hash.algorithmOid;
-                error.name = hash;
-                throw error;
-              }
-              mgf = oids[csr.signatureParameters.mgf.algorithmOid];
-              if (mgf === void 0 || forge.mgf[mgf] === void 0) {
-                var error = new Error("Unsupported MGF function.");
-                error.oid = csr.signatureParameters.mgf.algorithmOid;
-                error.name = mgf;
-                throw error;
-              }
-              mgf = forge.mgf[mgf].create(forge.md[hash].create());
-              hash = oids[csr.signatureParameters.hash.algorithmOid];
-              if (hash === void 0 || forge.md[hash] === void 0) {
-                var error = new Error("Unsupported RSASSA-PSS hash function.");
-                error.oid = csr.signatureParameters.hash.algorithmOid;
-                error.name = hash;
-                throw error;
-              }
-              scheme = forge.pss.create(forge.md[hash].create(), mgf, csr.signatureParameters.saltLength);
-              break;
-          }
-          rval = csr.publicKey.verify(md.digest().getBytes(), csr.signature, scheme);
+          rval = _verifySignature({
+            certificate: csr,
+            md,
+            signature: csr.signature
+          });
         }
         return rval;
       };
@@ -22659,45 +22448,6 @@ var require_aesCipherSuites = __commonJS({
   }
 });
 
-// node_modules/node-forge/lib/debug.js
-var require_debug = __commonJS({
-  "node_modules/node-forge/lib/debug.js"(exports2, module2) {
-    var forge = require_forge();
-    module2.exports = forge.debug = forge.debug || {};
-    forge.debug.storage = {};
-    forge.debug.get = function(cat, name) {
-      var rval;
-      if (typeof cat === "undefined") {
-        rval = forge.debug.storage;
-      } else if (cat in forge.debug.storage) {
-        if (typeof name === "undefined") {
-          rval = forge.debug.storage[cat];
-        } else {
-          rval = forge.debug.storage[cat][name];
-        }
-      }
-      return rval;
-    };
-    forge.debug.set = function(cat, name, data) {
-      if (!(cat in forge.debug.storage)) {
-        forge.debug.storage[cat] = {};
-      }
-      forge.debug.storage[cat][name] = data;
-    };
-    forge.debug.clear = function(cat, name) {
-      if (typeof cat === "undefined") {
-        forge.debug.storage = {};
-      } else if (cat in forge.debug.storage) {
-        if (typeof name === "undefined") {
-          delete forge.debug.storage[cat];
-        } else {
-          delete forge.debug.storage[cat][name];
-        }
-      }
-    };
-  }
-});
-
 // node_modules/node-forge/lib/sha512.js
 var require_sha512 = __commonJS({
   "node_modules/node-forge/lib/sha512.js"(exports2, module2) {
@@ -24445,13 +24195,13 @@ var require_log = __commonJS({
     var logger;
     var levelHandlers;
     var f;
-    if (sConsoleLogger !== null) {
-      query = forge.util.getQueryVariables();
-      if ("console.level" in query) {
-        forge.log.setLevel(sConsoleLogger, query["console.level"].slice(-1)[0]);
+    if (sConsoleLogger !== null && typeof window !== "undefined" && window.location) {
+      query = new URL(window.location.href).searchParams;
+      if (query.has("console.level")) {
+        forge.log.setLevel(sConsoleLogger, query.get("console.level").slice(-1)[0]);
       }
-      if ("console.lock" in query) {
-        lock = query["console.lock"].slice(-1)[0];
+      if (query.has("console.lock")) {
+        lock = query.get("console.lock").slice(-1)[0];
         if (lock == "true") {
           forge.log.lock(sConsoleLogger);
         }
@@ -24938,7 +24688,7 @@ var require_pkcs7 = __commonJS({
         serialNumber: forge.util.createBuffer(capture.serial).toHex(),
         encryptedContent: {
           algorithm: asn1.derToOid(capture.encAlgorithm),
-          parameter: capture.encParameter.value,
+          parameter: capture.encParameter ? capture.encParameter.value : void 0,
           content: capture.encKey
         }
       };
@@ -25046,7 +24796,7 @@ var require_pkcs7 = __commonJS({
         asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, asn1.oidToDer(forge.pki.oids.data).getBytes()),
         asn1.create(asn1.Class.UNIVERSAL, asn1.Type.SEQUENCE, true, [
           asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OID, false, asn1.oidToDer(ec.algorithm).getBytes()),
-          asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, ec.parameter.getBytes())
+          !ec.parameter ? void 0 : asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, ec.parameter.getBytes())
         ]),
         asn1.create(asn1.Class.CONTEXT_SPECIFIC, 0, true, [
           asn1.create(asn1.Class.UNIVERSAL, asn1.Type.OCTETSTRING, false, ec.content.getBytes())
@@ -25263,367 +25013,6 @@ var require_ssh = __commonJS({
   }
 });
 
-// node_modules/node-forge/lib/task.js
-var require_task = __commonJS({
-  "node_modules/node-forge/lib/task.js"(exports2, module2) {
-    var forge = require_forge();
-    require_debug();
-    require_log();
-    require_util();
-    var cat = "forge.task";
-    var sVL = 0;
-    var sTasks = {};
-    var sNextTaskId = 0;
-    forge.debug.set(cat, "tasks", sTasks);
-    var sTaskQueues = {};
-    forge.debug.set(cat, "queues", sTaskQueues);
-    var sNoTaskName = "?";
-    var sMaxRecursions = 30;
-    var sTimeSlice = 20;
-    var READY = "ready";
-    var RUNNING = "running";
-    var BLOCKED = "blocked";
-    var SLEEPING = "sleeping";
-    var DONE = "done";
-    var ERROR = "error";
-    var STOP = "stop";
-    var START = "start";
-    var BLOCK = "block";
-    var UNBLOCK = "unblock";
-    var SLEEP = "sleep";
-    var WAKEUP = "wakeup";
-    var CANCEL = "cancel";
-    var FAIL = "fail";
-    var sStateTable = {};
-    sStateTable[READY] = {};
-    sStateTable[READY][STOP] = READY;
-    sStateTable[READY][START] = RUNNING;
-    sStateTable[READY][CANCEL] = DONE;
-    sStateTable[READY][FAIL] = ERROR;
-    sStateTable[RUNNING] = {};
-    sStateTable[RUNNING][STOP] = READY;
-    sStateTable[RUNNING][START] = RUNNING;
-    sStateTable[RUNNING][BLOCK] = BLOCKED;
-    sStateTable[RUNNING][UNBLOCK] = RUNNING;
-    sStateTable[RUNNING][SLEEP] = SLEEPING;
-    sStateTable[RUNNING][WAKEUP] = RUNNING;
-    sStateTable[RUNNING][CANCEL] = DONE;
-    sStateTable[RUNNING][FAIL] = ERROR;
-    sStateTable[BLOCKED] = {};
-    sStateTable[BLOCKED][STOP] = BLOCKED;
-    sStateTable[BLOCKED][START] = BLOCKED;
-    sStateTable[BLOCKED][BLOCK] = BLOCKED;
-    sStateTable[BLOCKED][UNBLOCK] = BLOCKED;
-    sStateTable[BLOCKED][SLEEP] = BLOCKED;
-    sStateTable[BLOCKED][WAKEUP] = BLOCKED;
-    sStateTable[BLOCKED][CANCEL] = DONE;
-    sStateTable[BLOCKED][FAIL] = ERROR;
-    sStateTable[SLEEPING] = {};
-    sStateTable[SLEEPING][STOP] = SLEEPING;
-    sStateTable[SLEEPING][START] = SLEEPING;
-    sStateTable[SLEEPING][BLOCK] = SLEEPING;
-    sStateTable[SLEEPING][UNBLOCK] = SLEEPING;
-    sStateTable[SLEEPING][SLEEP] = SLEEPING;
-    sStateTable[SLEEPING][WAKEUP] = SLEEPING;
-    sStateTable[SLEEPING][CANCEL] = DONE;
-    sStateTable[SLEEPING][FAIL] = ERROR;
-    sStateTable[DONE] = {};
-    sStateTable[DONE][STOP] = DONE;
-    sStateTable[DONE][START] = DONE;
-    sStateTable[DONE][BLOCK] = DONE;
-    sStateTable[DONE][UNBLOCK] = DONE;
-    sStateTable[DONE][SLEEP] = DONE;
-    sStateTable[DONE][WAKEUP] = DONE;
-    sStateTable[DONE][CANCEL] = DONE;
-    sStateTable[DONE][FAIL] = ERROR;
-    sStateTable[ERROR] = {};
-    sStateTable[ERROR][STOP] = ERROR;
-    sStateTable[ERROR][START] = ERROR;
-    sStateTable[ERROR][BLOCK] = ERROR;
-    sStateTable[ERROR][UNBLOCK] = ERROR;
-    sStateTable[ERROR][SLEEP] = ERROR;
-    sStateTable[ERROR][WAKEUP] = ERROR;
-    sStateTable[ERROR][CANCEL] = ERROR;
-    sStateTable[ERROR][FAIL] = ERROR;
-    var Task = function(options) {
-      this.id = -1;
-      this.name = options.name || sNoTaskName;
-      this.parent = options.parent || null;
-      this.run = options.run;
-      this.subtasks = [];
-      this.error = false;
-      this.state = READY;
-      this.blocks = 0;
-      this.timeoutId = null;
-      this.swapTime = null;
-      this.userData = null;
-      this.id = sNextTaskId++;
-      sTasks[this.id] = this;
-      if (sVL >= 1) {
-        forge.log.verbose(cat, "[%s][%s] init", this.id, this.name, this);
-      }
-    };
-    Task.prototype.debug = function(msg) {
-      msg = msg || "";
-      forge.log.debug(cat, msg, "[%s][%s] task:", this.id, this.name, this, "subtasks:", this.subtasks.length, "queue:", sTaskQueues);
-    };
-    Task.prototype.next = function(name, subrun) {
-      if (typeof name === "function") {
-        subrun = name;
-        name = this.name;
-      }
-      var subtask = new Task({
-        run: subrun,
-        name,
-        parent: this
-      });
-      subtask.state = RUNNING;
-      subtask.type = this.type;
-      subtask.successCallback = this.successCallback || null;
-      subtask.failureCallback = this.failureCallback || null;
-      this.subtasks.push(subtask);
-      return this;
-    };
-    Task.prototype.parallel = function(name, subrun) {
-      if (forge.util.isArray(name)) {
-        subrun = name;
-        name = this.name;
-      }
-      return this.next(name, function(task) {
-        var ptask = task;
-        ptask.block(subrun.length);
-        var startParallelTask = function(pname2, pi2) {
-          forge.task.start({
-            type: pname2,
-            run: function(task2) {
-              subrun[pi2](task2);
-            },
-            success: function(task2) {
-              ptask.unblock();
-            },
-            failure: function(task2) {
-              ptask.unblock();
-            }
-          });
-        };
-        for (var i = 0; i < subrun.length; i++) {
-          var pname = name + "__parallel-" + task.id + "-" + i;
-          var pi = i;
-          startParallelTask(pname, pi);
-        }
-      });
-    };
-    Task.prototype.stop = function() {
-      this.state = sStateTable[this.state][STOP];
-    };
-    Task.prototype.start = function() {
-      this.error = false;
-      this.state = sStateTable[this.state][START];
-      if (this.state === RUNNING) {
-        this.start = new Date();
-        this.run(this);
-        runNext(this, 0);
-      }
-    };
-    Task.prototype.block = function(n) {
-      n = typeof n === "undefined" ? 1 : n;
-      this.blocks += n;
-      if (this.blocks > 0) {
-        this.state = sStateTable[this.state][BLOCK];
-      }
-    };
-    Task.prototype.unblock = function(n) {
-      n = typeof n === "undefined" ? 1 : n;
-      this.blocks -= n;
-      if (this.blocks === 0 && this.state !== DONE) {
-        this.state = RUNNING;
-        runNext(this, 0);
-      }
-      return this.blocks;
-    };
-    Task.prototype.sleep = function(n) {
-      n = typeof n === "undefined" ? 0 : n;
-      this.state = sStateTable[this.state][SLEEP];
-      var self2 = this;
-      this.timeoutId = setTimeout(function() {
-        self2.timeoutId = null;
-        self2.state = RUNNING;
-        runNext(self2, 0);
-      }, n);
-    };
-    Task.prototype.wait = function(cond) {
-      cond.wait(this);
-    };
-    Task.prototype.wakeup = function() {
-      if (this.state === SLEEPING) {
-        cancelTimeout(this.timeoutId);
-        this.timeoutId = null;
-        this.state = RUNNING;
-        runNext(this, 0);
-      }
-    };
-    Task.prototype.cancel = function() {
-      this.state = sStateTable[this.state][CANCEL];
-      this.permitsNeeded = 0;
-      if (this.timeoutId !== null) {
-        cancelTimeout(this.timeoutId);
-        this.timeoutId = null;
-      }
-      this.subtasks = [];
-    };
-    Task.prototype.fail = function(next) {
-      this.error = true;
-      finish(this, true);
-      if (next) {
-        next.error = this.error;
-        next.swapTime = this.swapTime;
-        next.userData = this.userData;
-        runNext(next, 0);
-      } else {
-        if (this.parent !== null) {
-          var parent = this.parent;
-          while (parent.parent !== null) {
-            parent.error = this.error;
-            parent.swapTime = this.swapTime;
-            parent.userData = this.userData;
-            parent = parent.parent;
-          }
-          finish(parent, true);
-        }
-        if (this.failureCallback) {
-          this.failureCallback(this);
-        }
-      }
-    };
-    var start = function(task) {
-      task.error = false;
-      task.state = sStateTable[task.state][START];
-      setTimeout(function() {
-        if (task.state === RUNNING) {
-          task.swapTime = +new Date();
-          task.run(task);
-          runNext(task, 0);
-        }
-      }, 0);
-    };
-    var runNext = function(task, recurse) {
-      var swap = recurse > sMaxRecursions || +new Date() - task.swapTime > sTimeSlice;
-      var doNext = function(recurse2) {
-        recurse2++;
-        if (task.state === RUNNING) {
-          if (swap) {
-            task.swapTime = +new Date();
-          }
-          if (task.subtasks.length > 0) {
-            var subtask = task.subtasks.shift();
-            subtask.error = task.error;
-            subtask.swapTime = task.swapTime;
-            subtask.userData = task.userData;
-            subtask.run(subtask);
-            if (!subtask.error) {
-              runNext(subtask, recurse2);
-            }
-          } else {
-            finish(task);
-            if (!task.error) {
-              if (task.parent !== null) {
-                task.parent.error = task.error;
-                task.parent.swapTime = task.swapTime;
-                task.parent.userData = task.userData;
-                runNext(task.parent, recurse2);
-              }
-            }
-          }
-        }
-      };
-      if (swap) {
-        setTimeout(doNext, 0);
-      } else {
-        doNext(recurse);
-      }
-    };
-    var finish = function(task, suppressCallbacks) {
-      task.state = DONE;
-      delete sTasks[task.id];
-      if (sVL >= 1) {
-        forge.log.verbose(cat, "[%s][%s] finish", task.id, task.name, task);
-      }
-      if (task.parent === null) {
-        if (!(task.type in sTaskQueues)) {
-          forge.log.error(cat, "[%s][%s] task queue missing [%s]", task.id, task.name, task.type);
-        } else if (sTaskQueues[task.type].length === 0) {
-          forge.log.error(cat, "[%s][%s] task queue empty [%s]", task.id, task.name, task.type);
-        } else if (sTaskQueues[task.type][0] !== task) {
-          forge.log.error(cat, "[%s][%s] task not first in queue [%s]", task.id, task.name, task.type);
-        } else {
-          sTaskQueues[task.type].shift();
-          if (sTaskQueues[task.type].length === 0) {
-            if (sVL >= 1) {
-              forge.log.verbose(cat, "[%s][%s] delete queue [%s]", task.id, task.name, task.type);
-            }
-            delete sTaskQueues[task.type];
-          } else {
-            if (sVL >= 1) {
-              forge.log.verbose(cat, "[%s][%s] queue start next [%s] remain:%s", task.id, task.name, task.type, sTaskQueues[task.type].length);
-            }
-            sTaskQueues[task.type][0].start();
-          }
-        }
-        if (!suppressCallbacks) {
-          if (task.error && task.failureCallback) {
-            task.failureCallback(task);
-          } else if (!task.error && task.successCallback) {
-            task.successCallback(task);
-          }
-        }
-      }
-    };
-    module2.exports = forge.task = forge.task || {};
-    forge.task.start = function(options) {
-      var task = new Task({
-        run: options.run,
-        name: options.name || sNoTaskName
-      });
-      task.type = options.type;
-      task.successCallback = options.success || null;
-      task.failureCallback = options.failure || null;
-      if (!(task.type in sTaskQueues)) {
-        if (sVL >= 1) {
-          forge.log.verbose(cat, "[%s][%s] create queue [%s]", task.id, task.name, task.type);
-        }
-        sTaskQueues[task.type] = [task];
-        start(task);
-      } else {
-        sTaskQueues[options.type].push(task);
-      }
-    };
-    forge.task.cancel = function(type) {
-      if (type in sTaskQueues) {
-        sTaskQueues[type] = [sTaskQueues[type][0]];
-      }
-    };
-    forge.task.createCondition = function() {
-      var cond = {
-        tasks: {}
-      };
-      cond.wait = function(task) {
-        if (!(task.id in cond.tasks)) {
-          task.block();
-          cond.tasks[task.id] = task;
-        }
-      };
-      cond.notify = function() {
-        var tmp = cond.tasks;
-        cond.tasks = {};
-        for (var id in tmp) {
-          tmp[id].unblock();
-        }
-      };
-      return cond;
-    };
-  }
-});
-
 // node_modules/node-forge/lib/index.js
 var require_lib3 = __commonJS({
   "node_modules/node-forge/lib/index.js"(exports2, module2) {
@@ -25632,7 +25021,6 @@ var require_lib3 = __commonJS({
     require_aesCipherSuites();
     require_asn1();
     require_cipher();
-    require_debug();
     require_des();
     require_ed25519();
     require_hmac();
@@ -25652,7 +25040,6 @@ var require_lib3 = __commonJS({
     require_random();
     require_rc2();
     require_ssh();
-    require_task();
     require_tls();
     require_util();
   }
@@ -46968,7 +46355,6 @@ var DbtRunner = class {
         try {
           this.dbtFileWatcher.dispose();
           const queryResult = yield this.getDbtQueryResults(uri);
-          vscode4.window.showInformationMessage("bq is done here");
           if (queryResult.status === "success") {
             const totalBytes = queryResult.info.totalBytesProcessed;
             let bytesMessage;
