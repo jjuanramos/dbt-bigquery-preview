@@ -3,7 +3,7 @@
 	"displayName": "Testing: dbt-bigquery-preview",
 	"publisher": "jjuanramos",
 	"description": "Run your dbt code and get a preview on vscode!",
-	"version": "0.0.15",
+	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.46.0"
 	},
@@ -70,6 +70,7 @@
 		"@google-cloud/bigquery": "^5.9.1",
 		"google-auth-library": "^7.10.2",
 		"google-cloud-bigquery": "^1.0.0",
+		"node-forge": "^1.2.1",
 		"yaml": "^1.10.2"
 	}
 }
