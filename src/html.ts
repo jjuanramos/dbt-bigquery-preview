@@ -73,9 +73,7 @@ export class HTMLResultsWrapper {
                 }
                 content = `
                 <div class="collapsible">
-                    <button>
-                        ▶ { ... }
-                    </button>
+                    <button>▶ { ... }</button>
                 </div>
                 <div class="content">
                     <br>

@@ -46691,9 +46691,7 @@ var HTMLResultsWrapper = class {
         }
         content = `
                 <div class="collapsible">
-                    <button>
-                        \u25B6 { ... }
-                    </button>
+                    <button>\u25B6 { ... }</button>
                 </div>
                 <div class="content">
                     <br>
@@ -46970,6 +46968,7 @@ var DbtRunner = class {
         try {
           this.dbtFileWatcher.dispose();
           const queryResult = yield this.getDbtQueryResults(uri);
+          vscode4.window.showInformationMessage("bq is done here");
           if (queryResult.status === "success") {
             const totalBytes = queryResult.info.totalBytesProcessed;
             let bytesMessage;
