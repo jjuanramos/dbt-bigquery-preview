@@ -73,13 +73,11 @@ export class DbtRunner {
             dbtKind,
             filePathSplitted[1]
         );
-        vscode.window.showInformationMessage(`compiledFilePath before adapter: ${compiledFilePath}`);
         this.compiledFilePath = this.windowsAdapter(compiledFilePath);
     }
 
     getCompiledQuery(): string {
         try {
-            vscode.window.showInformationMessage(`compiled file path is ${this.compiledFilePath}`);
             const compiledQuery = fs.readFileSync(this.compiledFilePath, 'utf-8');
             return compiledQuery + '\nlimit 100';
         } catch(e) {
@@ -144,7 +142,6 @@ export class DbtRunner {
                     this.compiledFilePath.slice(this.compiledFilePath.lastIndexOf('target'))
                 )
             ) {
-                vscode.window.showInformationMessage("They are equals!");
                 const compiledQuery = this.getCompiledQuery();
                 const queryResult = await this.bigQueryRunner.query(compiledQuery);
                 return queryResult;
