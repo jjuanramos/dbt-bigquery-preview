@@ -43,9 +43,8 @@ export class ResultsPanel {
         const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'public', 'styles.css');
 		const stylesUri = this._panel.webview.asWebviewUri(stylesPath);
 
-        const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);
-        const htmlWithDataCleanedUp = htmlWithData.replace('null', '<i>null</i>');
-        this._panel.webview.html = htmlWithDataCleanedUp;
+        const htmlWithData = new htmlWrapper.HTMLResultsWrapper(queryData).getDataWrapped(scriptUri, stylesUri);;
+        this._panel.webview.html = htmlWithData;
     }
 
     dispose() {
