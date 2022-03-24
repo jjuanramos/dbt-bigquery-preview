@@ -1,6 +1,5 @@
 import *  as vscode from 'vscode';
 
-import * as bigquery from './src/bigquery';
 import * as resultsPanel from './src/resultsPanel';
 import * as dbt from './src/dbt';
 
@@ -11,8 +10,7 @@ const workspacePath = vscode.workspace.workspaceFolders[0].uri.path;
 function activate(context: vscode.ExtensionContext) {
 	readConfig();
 
-	const bigQueryRunner = new bigquery.BigQueryRunner(config);
-	const dbtRunner = new dbt.DbtRunner(workspacePath, bigQueryRunner);
+	const dbtRunner = new dbt.DbtRunner(workspacePath, config);
 	const currentPanel = new resultsPanel.ResultsPanel(context.extensionUri);
 
 	context.subscriptions.push(

@@ -40,6 +40,11 @@
 					"type": "string",
 					"default": "EU",
 					"description": "The geographic location of all datasets and jobs referenced and created through the client."
+				},
+				"dbt-bigquery-preview.executablePath": {
+					"type": "string",
+					"default": "dbt",
+					"description": "Points to the dbt executable."
 				}
 			}
 		}

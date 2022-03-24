@@ -14,10 +14,12 @@ export class DbtRunner {
     terminal: vscode.Terminal;
     compiledFilePath: string | undefined;
     dbtFileWatcher: vscode.FileSystemWatcher;
+    executablePath: string;
 
-    constructor(workspacePath: string, bigQueryRunner: bigquery.BigQueryRunner) {
+    constructor(workspacePath: string, config: vscode.WorkspaceConfiguration) {
         this.dbtProjectName = this.getDbtProjectName(workspacePath);
-        this.bigQueryRunner = bigQueryRunner;
+        this.bigQueryRunner = new bigquery.BigQueryRunner(config);
+        this.executablePath = !!config.get("executablePath")? config.get("executablePath") : undefined
     }
 
     setConfig(config: vscode.WorkspaceConfiguration) {
