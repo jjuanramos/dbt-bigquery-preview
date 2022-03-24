@@ -19,11 +19,12 @@ export class DbtRunner {
     constructor(workspacePath: string, config: vscode.WorkspaceConfiguration) {
         this.dbtProjectName = this.getDbtProjectName(workspacePath);
         this.bigQueryRunner = new bigquery.BigQueryRunner(config);
-        this.executablePath = !!config.get("executablePath")? config.get("executablePath") : undefined
+        this.executablePath = config.get("executablePath");
     }
 
     setConfig(config: vscode.WorkspaceConfiguration) {
         this.bigQueryRunner.setConfig(config);
+        this.executablePath = config.get("executablePath");
     }
 
     private windowsAdapter(s: string): string {
@@ -114,7 +115,7 @@ export class DbtRunner {
 
     compileDbtAndShowTerminal() {
         this.terminal = this.selectTerminal();
-        this.terminal.sendText(`dbt compile -s ${this.fileName}`);
+        this.terminal.sendText(`${this.executablePath} compile -s ${this.fileName}`);
         this.terminal.show();
     }
 

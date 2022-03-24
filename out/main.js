@@ -46240,10 +46240,11 @@ var DbtRunner = class {
   constructor(workspacePath2, config2) {
     this.dbtProjectName = this.getDbtProjectName(workspacePath2);
     this.bigQueryRunner = new BigQueryRunner(config2);
-    this.executablePath = !!config2.get("executablePath") ? config2.get("executablePath") : void 0;
+    this.executablePath = config2.get("executablePath");
   }
   setConfig(config2) {
     this.bigQueryRunner.setConfig(config2);
+    this.executablePath = config2.get("executablePath");
   }
   windowsAdapter(s) {
     return s.replace(/(^\c:)/, "C:").replace(/(^\\)/, "");
@@ -46320,7 +46321,7 @@ var DbtRunner = class {
   }
   compileDbtAndShowTerminal() {
     this.terminal = this.selectTerminal();
-    this.terminal.sendText(`dbt compile -s ${this.fileName}`);
+    this.terminal.sendText(`${this.executablePath} compile -s ${this.fileName}`);
     this.terminal.show();
   }
   createFileWatcher() {
