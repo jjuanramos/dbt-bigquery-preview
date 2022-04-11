@@ -12,3 +12,7 @@ Should work across platforms, if you find any problem please [raise an issue](ht
 
 - Updated README
 - Updated npm packages
+
+### 0.0.21
+
+- Put the execution path inside quotation marks if it contains whitespace.
