@@ -16,3 +16,7 @@ Should work across platforms, if you find any problem please [raise an issue](ht
 ### 0.0.21
 
 - Put the execution path inside quotation marks if it contains whitespace.
+
+### 0.0.22
+
+- Forgot to remove a debugging log. Sorry!

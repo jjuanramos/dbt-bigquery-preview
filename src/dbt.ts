@@ -20,13 +20,11 @@ export class DbtRunner {
         this.dbtProjectName = this.getDbtProjectName(workspacePath);
         this.bigQueryRunner = new bigquery.BigQueryRunner(config);
         this.executablePath = this.getExecutablePath(config.get("executablePath"));
-        vscode.window.showInformationMessage(`${this.executablePath}`);
     }
 
     private getExecutablePath(execPath: string): string {
         // we check whether there are whitespaces in the path, and if there are
         // we put the execution path inside quotation marks.
-        vscode.window.showInformationMessage(`${execPath}`);
         let executablePath: string = execPath.trim();
         return executablePath.search(/\s/g) !== -1 ? `"${executablePath}"` : executablePath;
     }
