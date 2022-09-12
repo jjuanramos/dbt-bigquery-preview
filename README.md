@@ -10,6 +10,14 @@ Go to the Command Palette (shortcut: Ctrl + Shift + P) and look for `dbt-bigquer
 
 ![Example showcasing the extension](./media/preview.gif)
 
+## Tips
+
+You can add a keyboard shortcut for this action through `File` -> `Preferences` -> `Keyboard Shortcuts`. 
+Use `editorLangId == 'jinja-sql'` as when criterium in an environment configured for dbt-power-user installed 
+or `editorLangId == 'sql'` in any other environment.
+
+![Example showcasing adding the shortcut](./media/shortcut-preview.gif)
+
 ## Requirements
 
 For dbt-bigquery-preview to work, you have to:
