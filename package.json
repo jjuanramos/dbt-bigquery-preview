@@ -24,7 +24,8 @@
 		"commands": [
 			{
 				"command": "dbt-bigquery-preview.preview",
-				"title": "dbt-bigquery-preview: Preview dbt results"
+				"title": "dbt-bigquery-preview: Preview dbt results",
+				"icon": "$(open-preview)"
 			}
 		],
 		"configuration": {
@@ -47,6 +48,15 @@
 					"description": "Points to the dbt executable."
 				}
 			}
+		},
+		"menus": {
+		  "editor/title": [
+			{
+			  "when": "resourceLangId == sql || resourceLangId == jinja-sql",
+			  "command": "dbt-bigquery-preview.preview",
+			  "group": "navigation"
+			}
+		  ]
 		}
 	},
 	"scripts": {
