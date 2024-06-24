@@ -1,4 +1,4 @@
-# dbt-bigquery-preview
+# dbt-bigquery-preview [UNMAINTAINED]
 
 dbt-bigquery-preview is a little extension that allows you to run [dbt](https://getdbt.com/) code directly against [BigQuery](https://cloud.google.com/bigquery) and get the results back in vscode.
 
