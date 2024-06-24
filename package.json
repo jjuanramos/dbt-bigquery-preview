@@ -1,6 +1,6 @@
 {
 	"name": "dbt-bigquery-preview",
-	"displayName": "dbt-bigquery-preview",
+	"displayName": "dbt-bigquery-preview [UNMAINTAINED]",
 	"publisher": "jjuanramos",
 	"description": "Run your dbt code and get a preview on vscode!",
 	"version": "0.0.22",
