@@ -20,3 +20,7 @@ Should work across platforms, if you find any problem please [raise an issue](ht
 ### 0.0.22
 
 - Forgot to remove a debugging log. Sorry!
+
+### 0.0.23
+
+- Marked as Unmaintained.
